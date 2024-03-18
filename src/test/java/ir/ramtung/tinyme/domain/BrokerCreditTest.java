@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -92,10 +93,18 @@ public class BrokerCreditTest {
     }
 
     @Test
-    void new_buy_order_matches_partially_with_two_sells() {
+    void new_buy_order_matches_completely_with_two_sells() {
         Order order = new Order(11, security, Side.BUY, 500, 15830, broker2, shareholder);
         MatchResult result = matcher.match(order);
         assertThat(broker1.getCredit()).isEqualTo(107_901_500L);
         assertThat(broker2.getCredit()).isEqualTo(92_098_500L);
+    }
+
+    @Test
+    void new_buy_order_matches_partially_with_the_entire_sell_queue() {
+        Order order = new Order(11, security, Side.BUY, 2000, 15820, broker2, shareholder);
+        MatchResult result = matcher.match(order);
+        assertThat(broker1.getCredit()).isEqualTo(122_683_850L);
+        assertThat(broker2.getCredit()).isEqualTo(77_316_150L);
     }
 }
