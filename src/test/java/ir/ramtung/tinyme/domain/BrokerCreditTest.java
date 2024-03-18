@@ -32,8 +32,8 @@ public class BrokerCreditTest {
     @BeforeEach
     void setupOrderBook() {
         security = Security.builder().build();
-        broker1 = Broker.builder().credit(1_000_000_000L).build();
-        broker2 = Broker.builder().credit(1_000_000_000L).build();
+        broker1 = Broker.builder().credit(100_000_000L).build();
+        broker2 = Broker.builder().credit(100_000_000L).build();
         shareholder = Shareholder.builder().build();
         shareholder.incPosition(security, 100_000);
         orderBook = security.getOrderBook();
@@ -56,16 +56,16 @@ public class BrokerCreditTest {
     void new_sell_order_matches_completely_with_part_of_the_first_buy() {
         Order order = new Order(11, security, Side.SELL, 10, 15600, broker2, shareholder);
         MatchResult result = matcher.match(order);
-        assertThat(result.remainder().getBroker().getCredit()).isEqualTo(1_000_157_000L);
-        assertThat(broker1.getCredit()).isEqualTo(1_000_000_000L);
+        assertThat(result.remainder().getBroker().getCredit()).isEqualTo(100_157_000L);
+        assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
     }
 
     @Test
     void new_sell_order_matches_partially_with_the_first_buy() {
         Order order = new Order(11, security, Side.SELL, 500, 15600, broker1, shareholder);
         MatchResult result = matcher.match(order);
-        assertThat(broker1.getCredit()).isEqualTo(1_004_772_800L);
-        assertThat(broker2.getCredit()).isEqualTo(1_000_000_000L);
+        assertThat(broker1.getCredit()).isEqualTo(104_772_800L);
+        assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
     }
 
 }
