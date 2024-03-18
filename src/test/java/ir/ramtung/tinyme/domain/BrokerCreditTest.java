@@ -117,4 +117,15 @@ public class BrokerCreditTest {
             assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
         } catch (Exception ignored) {}
     }
+
+    @Test
+    void delete_buy_order() {
+        try {
+            DeleteOrderRq deleteOrderRq = new DeleteOrderRq(1, security.getIsin(), Side.BUY, 3);
+            security.deleteOrder(deleteOrderRq);
+            assertThat(broker1.getCredit()).isEqualTo(106_875_250L);
+            assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
+        } catch (Exception ignored) {}
+    }
+    
 }
