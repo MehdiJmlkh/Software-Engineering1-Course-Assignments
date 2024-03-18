@@ -67,5 +67,11 @@ public class BrokerCreditTest {
         assertThat(broker1.getCredit()).isEqualTo(104_772_800L);
         assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
     }
-
+    @Test
+    void new_sell_order_matches_partially_with_two_buys() {
+        Order order = new Order(11, security, Side.SELL, 500, 15500, broker1, shareholder);
+        MatchResult result = matcher.match(order);
+        assertThat(broker1.getCredit()).isEqualTo(105_439_300L);
+        assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
+    }
 }
