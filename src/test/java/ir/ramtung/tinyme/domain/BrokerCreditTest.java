@@ -150,5 +150,13 @@ public class BrokerCreditTest {
             assertThat(broker1.getCredit()).isEqualTo(104_772_800L);
         } catch (Exception ignored) {}
     }
-
+    @Test
+    void new_buy_order_does_not_have_enough_credit() {
+        broker2 = Broker.builder().credit(6_000_000L).build();
+        Order order = new Order(11, security, Side.BUY, 1000, 15810, broker2, shareholder);
+        MatchResult result = matcher.match(order);
+        assertThat(broker2.getCredit()).isEqualTo(6_000_000L);
+        assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
+    }
+    
 }
