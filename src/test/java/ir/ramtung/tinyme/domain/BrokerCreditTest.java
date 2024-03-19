@@ -141,4 +141,14 @@ public class BrokerCreditTest {
        } catch (Exception ignored) {}
     }
 
+    @Test
+    void update_sell_order() {
+        EnterOrderRq updateOrderRq = EnterOrderRq.createUpdateOrderRq(1, security.getIsin(), 6, LocalDateTime.now(), Side.SELL, 500, 15700, 0, 0, 0);
+        try {
+            security.updateOrder(updateOrderRq, matcher);
+            assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
+            assertThat(broker1.getCredit()).isEqualTo(104_772_800L);
+        } catch (Exception ignored) {}
+    }
+
 }
