@@ -4,6 +4,8 @@ import ir.ramtung.tinyme.config.MockedJMSTestConfig;
 import ir.ramtung.tinyme.domain.entity.*;
 import ir.ramtung.tinyme.domain.service.Matcher;
 import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
+import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
+import ir.ramtung.tinyme.messaging.request.OrderEntryType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -127,5 +130,15 @@ public class BrokerCreditTest {
             assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
         } catch (Exception ignored) {}
     }
-    
+
+    @Test
+    void update_buy_order() {
+        EnterOrderRq updateOrderRq = EnterOrderRq.createUpdateOrderRq(1, security.getIsin(), 5, LocalDateTime.now(), Side.BUY, 500, 15700, 0, 0, 0);
+       try {
+           security.updateOrder(updateOrderRq, matcher);
+           assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
+           assertThat(broker2.getCredit()).isEqualTo(107_550_000L);
+       } catch (Exception ignored) {}
+    }
+
 }
