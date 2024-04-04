@@ -101,6 +101,10 @@ public class Order {
         price = updateOrderRq.getPrice();
     }
 
+    public boolean matchedMinimumExecutionQuantity(int initialQuantity) {
+        return (initialQuantity - quantity) >= minimumExecutionQuantity;
+    }
+
     public long getValue() {
         return (long)price * quantity;
     }
