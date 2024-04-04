@@ -65,7 +65,7 @@ public class Matcher {
         if (result.outcome() == MatchingOutcome.NOT_ENOUGH_CREDIT)
             return result;
 
-        if(!result.remainder().matchedMinimumExecutionQuantity(order.getQuantity())) {
+        if(!result.remainder().matchedMinimumExecutionQuantity(order.getQuantity()) && order.isNew()) {
             rollbackTrades(order, result.trades());
             return MatchResult.notEnoughExecutionQuantity();
         }
