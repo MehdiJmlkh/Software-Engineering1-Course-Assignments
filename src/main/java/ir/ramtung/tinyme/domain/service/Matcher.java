@@ -53,7 +53,7 @@ public class Matcher {
         }
         else
             newOrder.getBroker().decreaseCreditBy(trades.stream().mapToLong(Trade::getTradedValue).sum());
-        
+
         ListIterator<Trade> it = trades.listIterator(trades.size());
         while (it.hasPrevious()) {
             newOrder.getSecurity().getOrderBook().restoreOrder(it.previous().getSell());
