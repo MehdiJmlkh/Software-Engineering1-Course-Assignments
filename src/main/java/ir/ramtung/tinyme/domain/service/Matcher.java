@@ -53,7 +53,7 @@ public class Matcher {
 
         ListIterator<Trade> it = trades.listIterator(trades.size());
         while (it.hasPrevious()) {
-            newOrder.getSecurity().getOrderBook().restoreSellOrder(it.previous().getSell());
+            newOrder.getSecurity().getOrderBook().restoreOrder(it.previous().getSell());
         }
     }
 
