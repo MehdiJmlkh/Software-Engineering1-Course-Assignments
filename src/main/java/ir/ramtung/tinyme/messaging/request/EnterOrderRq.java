@@ -28,6 +28,20 @@ public class EnterOrderRq {
     private int peakSize;
     private int minimumExecutionQuantity;
 
+    private EnterOrderRq(OrderEntryType orderEntryType, long requestId, String securityIsin, long orderId, LocalDateTime entryTime, Side side, int quantity, int price, long brokerId, long shareholderId, int peakSize, int minimumExecutionQuantity) {
+        this.requestType = orderEntryType;
+        this.requestId = requestId;
+        this.securityIsin = securityIsin;
+        this.orderId = orderId;
+        this.entryTime = entryTime;
+        this.side = side;
+        this.quantity = quantity;
+        this.price = price;
+        this.brokerId = brokerId;
+        this.shareholderId = shareholderId;
+        this.peakSize = peakSize;
+        this.minimumExecutionQuantity = minimumExecutionQuantity;
+    }
     private EnterOrderRq(OrderEntryType orderEntryType, long requestId, String securityIsin, long orderId, LocalDateTime entryTime, Side side, int quantity, int price, long brokerId, long shareholderId, int peakSize) {
         this.requestType = orderEntryType;
         this.requestId = requestId;
@@ -40,6 +54,7 @@ public class EnterOrderRq {
         this.brokerId = brokerId;
         this.shareholderId = shareholderId;
         this.peakSize = peakSize;
+        this.minimumExecutionQuantity = 0;
     }
 
     public static EnterOrderRq createNewOrderRq(long requestId, String securityIsin, long orderId, LocalDateTime entryTime, Side side, int quantity, int price, long brokerId, long shareholderId, int peakSize) {
