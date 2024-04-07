@@ -87,6 +87,10 @@ public class OrderHandler {
             errors.add(Message.ORDER_QUANTITY_NOT_POSITIVE);
         if (enterOrderRq.getPrice() <= 0)
             errors.add(Message.ORDER_PRICE_NOT_POSITIVE);
+        if (enterOrderRq.getMinimumExecutionQuantity() < 0)
+            errors.add(Message.ORDER_MINIMUM_EXECUTION_QUANTITY_NOT_POSITIVE);
+        if (enterOrderRq.getMinimumExecutionQuantity() > enterOrderRq.getQuantity())
+            errors.add(Message.MINIMUM_EXECUTION_QUANTITY_NOT_LESS_THAN_OR_EQUAL_TO_QUANTITY);
         Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
         if (security == null)
             errors.add(Message.UNKNOWN_SECURITY_ISIN);
