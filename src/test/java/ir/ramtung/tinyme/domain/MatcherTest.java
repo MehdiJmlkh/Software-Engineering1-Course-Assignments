@@ -147,4 +147,19 @@ public class MatcherTest {
         assertThat(result.outcome()).isEqualTo(MatchingOutcome.NOT_ENOUGH_EXECUTION_QUANTITY);
     }
 
+    @Test
+    void new_buy_order_match_minimum_execution_quantity() {
+        Order order = new Order(11, security, Side.BUY, 2000, 15800, broker, shareholder, 350);
+        MatchResult result = matcher.execute(order);
+
+        assertThat(result.outcome()).isEqualTo(MatchingOutcome.EXECUTED);
+    }
+
+    @Test
+    void new_sell_order_match_minimum_execution_quantity() {
+        Order order = new Order(11, security, Side.SELL, 2000, 15700, broker, shareholder, 300);
+        MatchResult result = matcher.execute(order);
+
+        assertThat(result.outcome()).isEqualTo(MatchingOutcome.EXECUTED);
+    }
 }
