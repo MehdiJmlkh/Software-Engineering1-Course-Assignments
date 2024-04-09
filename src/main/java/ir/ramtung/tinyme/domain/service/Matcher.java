@@ -61,11 +61,12 @@ public class Matcher {
     }
 
     public MatchResult execute(Order order) {
+        orderSnapshot = order.snapshot();
         MatchResult result = match(order);
         if (result.outcome() == MatchingOutcome.NOT_ENOUGH_CREDIT)
             return result;
 
-        if(!result.remainder().matchedMinimumExecutionQuantity(order.getQuantity()) && order.isNew()) {
+        if(!result.remainder().matchedMinimumExecutionQuantity(orderSnapshot.getQuantity()) && orderSnapshot.isNew()) {
             rollbackTrades(order, result.trades());
             return MatchResult.notEnoughExecutionQuantity();
         }
