@@ -139,4 +139,12 @@ public class MatcherTest {
         assertThat(result.outcome()).isEqualTo(MatchingOutcome.NOT_ENOUGH_EXECUTION_QUANTITY);
     }
 
+    @Test
+    void new_sell_order_does_not_match_minimum_execution_quantity() {
+        Order order = new Order(11, security, Side.SELL, 2000, 15700, broker, shareholder, 400);
+        MatchResult result = matcher.execute(order);
+
+        assertThat(result.outcome()).isEqualTo(MatchingOutcome.NOT_ENOUGH_EXECUTION_QUANTITY);
+    }
+
 }
