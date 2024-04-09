@@ -158,5 +158,23 @@ public class BrokerCreditTest {
         assertThat(broker2.getCredit()).isEqualTo(6_000_000L);
         assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
     }
+
+    @Test
+    void new_buy_order_does_not_match_minimum_execution_quantity() {
+        Order order = new Order(11, security, Side.BUY, 2000, 15800, broker2, shareholder, 400);
+        MatchResult result = matcher.execute(order);
+
+        assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
+        assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
+    }
+
+    @Test
+    void new_sell_order_does_not_match_minimum_execution_quantity() {
+        Order order = new Order(11, security, Side.SELL, 2000, 15700, broker2, shareholder, 400);
+        MatchResult result = matcher.execute(order);
+
+        assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
+        assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
+    }
     
 }
