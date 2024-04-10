@@ -342,4 +342,26 @@ public class OrderHandlerTest {
         assertThat(shareholder1.hasEnoughPositionsOn(security, 100_000)).isTrue();
         assertThat(shareholder.hasEnoughPositionsOn(security, 500)).isTrue();
     }
+
+    @Test
+    void invalid_new_order_with_minimum_execution_quantity_not_less_than_or_equal_to_quantity() {
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 3, LocalDateTime.now(), Side.BUY, 90, 545, broker3.getBrokerId(), shareholder.getShareholderId(), 0, 100));
+        ArgumentCaptor<OrderRejectedEvent> orderRejectedCaptor = ArgumentCaptor.forClass(OrderRejectedEvent.class);
+        verify(eventPublisher).publish(orderRejectedCaptor.capture());
+        OrderRejectedEvent outputEvent = orderRejectedCaptor.getValue();
+        assertThat(outputEvent.getErrors()).containsOnly(
+                Message.MINIMUM_EXECUTION_QUANTITY_NOT_LESS_THAN_OR_EQUAL_TO_QUANTITY
+        );
+    }
+
+    @Test
+    void invalid_new_order_with_minimum_execution_quantity_not_positive() {
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 3, LocalDateTime.now(), Side.BUY, 90, 545, broker3.getBrokerId(), shareholder.getShareholderId(), 0, -100));
+        ArgumentCaptor<OrderRejectedEvent> orderRejectedCaptor = ArgumentCaptor.forClass(OrderRejectedEvent.class);
+        verify(eventPublisher).publish(orderRejectedCaptor.capture());
+        OrderRejectedEvent outputEvent = orderRejectedCaptor.getValue();
+        assertThat(outputEvent.getErrors()).containsOnly(
+                Message.ORDER_MINIMUM_EXECUTION_QUANTITY_NOT_POSITIVE
+        );
+    }
 }
