@@ -1,5 +1,9 @@
 package ir.ramtung.tinyme.messaging;
 
+import org.apache.commons.beanutils.PropertyUtilsBean;
+
+import java.util.Stack;
+
 public class Message {
     public static final String INVALID_ORDER_ID = "Invalid order ID";
     public static final String ORDER_QUANTITY_NOT_POSITIVE = "Order quantity is not-positive";
@@ -16,4 +20,6 @@ public class Message {
     public static final String PRICE_NOT_MULTIPLE_OF_TICK_SIZE = "Price is not a multiple of security tick size";
     public static final String MINIMUM_EXECUTION_QUANTITY_NOT_LESS_THAN_OR_EQUAL_TO_QUANTITY = "Minimum execution quantity is not less than or equal to quantity";
     public static final String SELLER_HAS_NOT_ENOUGH_POSITIONS = "Seller has not enough positions";
+    public static final String ORDER_HAS_NOT_EXECUTED_MINIMUM_EXECUTION_QUANTITY = "Order has not executed minimum execution quantity";
+    public static final String MINIMUM_EXECUTION_QUANTITY_OF_UPDATE_ORDER_HAS_CHANGED = "Minimum execution quantity of update order has changed";
 }
