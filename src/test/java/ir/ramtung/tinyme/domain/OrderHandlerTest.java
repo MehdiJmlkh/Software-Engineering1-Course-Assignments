@@ -364,4 +364,40 @@ public class OrderHandlerTest {
                 Message.ORDER_MINIMUM_EXECUTION_QUANTITY_NOT_POSITIVE
         );
     }
+
+    @Test
+    void new_order_without_enough_execution_quantity_is_rejected() {
+        List<Order> orders = Arrays.asList(
+                new Order(1, security, Side.BUY, 20, 570, broker3, shareholder),
+                new Order(2, security, Side.BUY, 430, 550, broker3, shareholder),
+                new Order(3, security, Side.BUY, 445, 545, broker3, shareholder),
+                new Order(6, security, Side.SELL, 350, 580, broker1, shareholder),
+                new Order(7, security, Side.SELL, 100, 581, broker2, shareholder)
+        );
+        orders.forEach(order -> security.getOrderBook().enqueue(order));
+        shareholder.decPosition(security, 99_500);
+        broker3.increaseCreditBy(100_000_000);
+
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 5, LocalDateTime.now(), Side.SELL, 40, 570, broker1.getBrokerId(), shareholder.getShareholderId(), 0,30));
+
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 5, List.of(Message.ORDER_HAS_NOT_EXECUTED_MINIMUM_EXECUTION_QUANTITY)));
+    }
+
+    @Test
+    void update_order_with_different_minimum_execution_quantity_is_rejected() {
+        List<Order> orders = Arrays.asList(
+                new Order(1, security, Side.BUY, 20, 570, broker3, shareholder, 10),
+                new Order(2, security, Side.BUY, 430, 550, broker3, shareholder),
+                new Order(3, security, Side.BUY, 445, 545, broker3, shareholder),
+                new Order(6, security, Side.SELL, 350, 580, broker1, shareholder),
+                new Order(7, security, Side.SELL, 100, 581, broker2, shareholder)
+        );
+        orders.forEach(order -> security.getOrderBook().enqueue(order));
+        shareholder.decPosition(security, 99_500);
+        broker3.increaseCreditBy(100_000_000);
+
+        orderHandler.handleEnterOrder(EnterOrderRq.createUpdateOrderRq(1, "ABC", 1, LocalDateTime.now(), Side.BUY, 40, 570, broker3.getBrokerId(), shareholder.getShareholderId(), 0,30));
+
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 1, List.of(Message.MINIMUM_EXECUTION_QUANTITY_OF_UPDATE_ORDER_HAS_CHANGED)));
+    }
 }
