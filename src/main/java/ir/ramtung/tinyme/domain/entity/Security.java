@@ -57,6 +57,9 @@ public class Security {
         if (!(order instanceof IcebergOrder) && updateOrderRq.getPeakSize() != 0)
             throw new InvalidRequestException(Message.CANNOT_SPECIFY_PEAK_SIZE_FOR_A_NON_ICEBERG_ORDER);
 
+        if (order.getMinimumExecutionQuantity() != updateOrderRq.getMinimumExecutionQuantity())
+            return MatchResult.notEqualMinimumExecutionQuantity();
+
         if (updateOrderRq.getSide() == Side.SELL &&
                 !order.getShareholder().hasEnoughPositionsOn(this,
                 orderBook.totalSellQuantityByShareholder(order.getShareholder()) - order.getQuantity() + updateOrderRq.getQuantity()))
