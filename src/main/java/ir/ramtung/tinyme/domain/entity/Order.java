@@ -8,6 +8,8 @@ import lombok.ToString;
 
 import java.time.LocalDateTime;
 
+import static java.lang.Double.POSITIVE_INFINITY;
+
 @Builder
 @EqualsAndHashCode
 @ToString
@@ -25,8 +27,9 @@ public class Order {
     @Builder.Default
     protected OrderStatus status = OrderStatus.NEW;
     protected int minimumExecutionQuantity = 0;
+    protected int stopPrice;
 
-    public Order(long orderId, Security security, Side side, int quantity, int price, Broker broker, Shareholder shareholder, LocalDateTime entryTime, OrderStatus status, int minimumExecutionQuantity) {
+    public Order(long orderId, Security security, Side side, int quantity, int price, Broker broker, Shareholder shareholder, LocalDateTime entryTime, OrderStatus status, int minimumExecutionQuantity, int stopPrice) {
         this.orderId = orderId;
         this.security = security;
         this.side = side;
@@ -37,7 +40,12 @@ public class Order {
         this.shareholder = shareholder;
         this.status = status;
         this.minimumExecutionQuantity = minimumExecutionQuantity;
+        this.stopPrice = stopPrice;
     }
+
+    public Order(long orderId, Security security, Side side, int quantity, int price, Broker broker, Shareholder shareholder, LocalDateTime entryTime, OrderStatus status, int minimumExecutionQuantity) {
+        this(orderId, security, side, quantity, price, broker, shareholder, entryTime, status, minimumExecutionQuantity, (side == Side.BUY) ? 0 : (int)POSITIVE_INFINITY);
+        }
 
     public Order(long orderId, Security security, Side side, int quantity, int price, Broker broker, Shareholder shareholder, LocalDateTime entryTime, OrderStatus status) {
         this(orderId, security, side, quantity, price, broker, shareholder, entryTime,  status, 0);
