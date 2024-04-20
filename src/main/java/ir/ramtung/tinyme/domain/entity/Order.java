@@ -114,6 +114,10 @@ public class Order {
         status = OrderStatus.QUEUED;
     }
 
+    public void stop() {
+        status = OrderStatus.STOPPED;
+    }
+
     public boolean isQuantityIncreased(int newQuantity) {
         return newQuantity > quantity;
     }

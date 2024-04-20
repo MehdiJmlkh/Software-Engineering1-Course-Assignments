@@ -64,6 +64,7 @@ public class Matcher {
         Order orderSnapshot = order.snapshot();
 
         if (!order.isActivatable(order.getSecurity().getOrderBook().marketPrice(order.getSide().opposite()))){
+            order.stop();
             order.getSecurity().getOrderBook().enqueue(order);
             return MatchResult.notActivatable();
         }
