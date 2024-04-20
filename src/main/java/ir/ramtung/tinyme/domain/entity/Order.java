@@ -98,9 +98,15 @@ public class Order {
 
     public boolean queuesBefore(Order order) {
         if (order.getSide() == Side.BUY) {
-            return price > order.getPrice();
+            if (isStopped())
+                return stopPrice < order.getStopPrice();
+            else
+                return price > order.getPrice();
         } else {
-            return price < order.getPrice();
+            if(isStopped())
+                return stopPrice > order.getStopPrice();
+            else
+                return price < order.getPrice();
         }
     }
 
@@ -129,6 +135,10 @@ public class Order {
 
     public boolean isNew() {
         return status == OrderStatus.NEW;
+    }
+
+    public boolean isStopped() {
+        return status == OrderStatus.STOPPED;
     }
 
     public boolean isActivatable(int marketPrice) {

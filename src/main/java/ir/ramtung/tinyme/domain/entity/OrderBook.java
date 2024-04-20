@@ -10,14 +10,18 @@ import java.util.ListIterator;
 public class OrderBook {
     private final LinkedList<Order> buyQueue;
     private final LinkedList<Order> sellQueue;
+    private final LinkedList<Order> stopBuyQueue;
+    private final LinkedList<Order> stopSellQueue;
 
     public OrderBook() {
         buyQueue = new LinkedList<>();
         sellQueue = new LinkedList<>();
+        stopBuyQueue = new LinkedList<>();
+        stopSellQueue = new LinkedList<>();
     }
 
     public void enqueue(Order order) {
-        List<Order> queue = getQueue(order.getSide());
+        List<Order> queue = getQueue(order.getSide(), order.isStopped());
         ListIterator<Order> it = queue.listIterator();
         while (it.hasNext()) {
             if (order.queuesBefore(it.next())) {
@@ -31,6 +35,11 @@ public class OrderBook {
 
     private LinkedList<Order> getQueue(Side side) {
         return side == Side.BUY ? buyQueue : sellQueue;
+    }
+
+    private LinkedList<Order> getQueue(Side side, boolean stopped) {
+        return side == Side.BUY ? stopped ? stopBuyQueue : buyQueue :
+                                  stopped ? stopSellQueue : sellQueue;
     }
 
     public Order findByOrderId(Side side, long orderId) {
