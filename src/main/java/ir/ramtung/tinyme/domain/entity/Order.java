@@ -130,4 +130,11 @@ public class Order {
     public boolean isNew() {
         return status == OrderStatus.NEW;
     }
+
+    public boolean isActivatable(int marketPrice) {
+        if (side == Side.BUY)
+            return stopPrice >= marketPrice;
+        else
+            return stopPrice <= marketPrice;
+    }
 }
