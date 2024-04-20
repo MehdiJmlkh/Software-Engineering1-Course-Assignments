@@ -99,6 +99,10 @@ public class OrderHandler {
             errors.add(Message.ORDER_MINIMUM_EXECUTION_QUANTITY_NOT_POSITIVE);
         if (enterOrderRq.getMinimumExecutionQuantity() > enterOrderRq.getQuantity())
             errors.add(Message.MINIMUM_EXECUTION_QUANTITY_NOT_LESS_THAN_OR_EQUAL_TO_QUANTITY);
+        if (enterOrderRq.getSide() == Side.BUY && enterOrderRq.getStopPrice() > enterOrderRq.getPrice())
+            errors.add(Message.BUY_ORDER_PRICE_IS_NOT_GREATER_THAN_OR_EQUAL_TO_STOP_PRICE);
+        if (enterOrderRq.getSide() == Side.SELL && enterOrderRq.getStopPrice() < enterOrderRq.getPrice())
+            errors.add(Message.SELL_ORDER_PRICE_IS_NOT_LESS_THAN_OR_EQUAL_TO_STOP_PRICE);
         Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
         if (security == null)
             errors.add(Message.UNKNOWN_SECURITY_ISIN);
