@@ -87,4 +87,8 @@ public class OrderBook {
                 .mapToInt(Order::getTotalQuantity)
                 .sum();
     }
+
+    public int marketPrice(Side side) {
+        return getQueue(side).getFirst().getPrice();
+    }
 }
