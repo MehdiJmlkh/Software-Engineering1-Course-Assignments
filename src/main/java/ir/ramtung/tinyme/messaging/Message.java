@@ -22,6 +22,6 @@ public class Message {
     public static final String SELLER_HAS_NOT_ENOUGH_POSITIONS = "Seller has not enough positions";
     public static final String ORDER_HAS_NOT_EXECUTED_MINIMUM_EXECUTION_QUANTITY = "Order has not executed minimum execution quantity";
     public static final String MINIMUM_EXECUTION_QUANTITY_OF_UPDATE_ORDER_HAS_CHANGED = "Minimum execution quantity of update order has changed";
-    public static final String BUY_ORDER_PRICE_IS_NOT_GREATER_THAN_STOP_PRICE = " Buy-order price is not greater than stop price";
+    public static final String BUY_ORDER_PRICE_IS_NOT_GREATER_THAN_OR_EQUAL_TO_STOP_PRICE = " Buy-order price is not greater than or equal to stop price";
     public static final String SELL_ORDER_PRICE_IS_NOT_LESS_THAN_OR_EQUAL_TO_STOP_PRICE = "Sell-order price is not less than or equal to stop price";
 }
