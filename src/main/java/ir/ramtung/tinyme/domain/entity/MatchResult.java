@@ -13,6 +13,10 @@ public final class MatchResult {
         return new MatchResult(MatchingOutcome.EXECUTED, remainder, new LinkedList<>(trades));
     }
 
+    public static MatchResult notActivatable() {
+        return new MatchResult(MatchingOutcome.NOT_ACTIVATABLE, null, new LinkedList<>());
+    }
+
     public static MatchResult notEnoughCredit() {
         return new MatchResult(MatchingOutcome.NOT_ENOUGH_CREDIT, null, new LinkedList<>());
     }
