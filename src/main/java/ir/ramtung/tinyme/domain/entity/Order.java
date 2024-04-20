@@ -55,6 +55,10 @@ public class Order {
         this(orderId, security, side, quantity, price, broker, shareholder, entryTime,  OrderStatus.NEW, minimumExecutionQuantity);
     }
 
+    public Order(long orderId, Security security, Side side, int quantity, int price, Broker broker, Shareholder shareholder, LocalDateTime entryTime, int minimumExecutionQuantity, int stopPrice) {
+        this(orderId, security, side, quantity, price, broker, shareholder, entryTime,  OrderStatus.NEW, minimumExecutionQuantity, stopPrice);
+    }
+
     public Order(long orderId, Security security, Side side, int quantity, int price, Broker broker, Shareholder shareholder, LocalDateTime entryTime) {
         this(orderId, security, side, quantity, price, broker, shareholder, entryTime,  OrderStatus.NEW, 0);
     }
