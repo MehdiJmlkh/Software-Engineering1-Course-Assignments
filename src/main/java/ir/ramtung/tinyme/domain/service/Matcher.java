@@ -62,12 +62,12 @@ public class Matcher {
 
     public MatchResult execute(Order order) {
         Order orderSnapshot = order.snapshot();
-
-        if (!order.isActivatable(order.getSecurity().getOrderBook().marketPrice(order.getSide().opposite()))){
-            order.stop();
-            order.getSecurity().getOrderBook().enqueue(order);
-            return MatchResult.notActivatable();
+        if (order instanceof StopLimitOrder stopLimitOrder)
+            if (!stopLimitOrder.isActivatable(order.getSecurity().getMarketPrice())){
+                order.getSecurity().getOrderBook().enqueue(order);
+                return MatchResult.notActivatable();
         }
+
         MatchResult result = match(order);
         if (result.outcome() == MatchingOutcome.NOT_ENOUGH_CREDIT)
             return result;
