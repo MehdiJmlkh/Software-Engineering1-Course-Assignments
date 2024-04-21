@@ -48,12 +48,25 @@ public class OrderBook {
             if (order.getOrderId() == orderId)
                 return order;
         }
+        queue = getQueue(side, true);
+        for (Order order : queue) {
+            if (order.getOrderId() == orderId)
+                return order;
+        }
         return null;
     }
 
     public boolean removeByOrderId(Side side, long orderId) {
         var queue = getQueue(side);
         var it = queue.listIterator();
+        while (it.hasNext()) {
+            if (it.next().getOrderId() == orderId) {
+                it.remove();
+                return true;
+            }
+        }
+        queue = getQueue(side, true);
+        it = queue.listIterator();
         while (it.hasNext()) {
             if (it.next().getOrderId() == orderId) {
                 it.remove();
@@ -85,7 +98,7 @@ public class OrderBook {
     }
 
     public void putBack(Order order) {
-        LinkedList<Order> queue = getQueue(order.getSide());
+        LinkedList<Order> queue = getQueue(order.getSide(), order instanceof StopLimitOrder);
         order.queue();
         queue.addFirst(order);
     }
