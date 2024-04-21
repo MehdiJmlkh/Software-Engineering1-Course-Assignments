@@ -1,5 +1,6 @@
 package ir.ramtung.tinyme.domain.entity;
 
+import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -29,6 +30,12 @@ public class StopLimitOrder extends Order{
             return stopPrice <= marketPrice;
         else
             return stopPrice >= marketPrice;
+    }
+
+    @Override
+    public void updateFromRequest(EnterOrderRq updateOrderRq) {
+        super.updateFromRequest(updateOrderRq);
+        stopPrice = updateOrderRq.getStopPrice();
     }
 
     public Order activate() {

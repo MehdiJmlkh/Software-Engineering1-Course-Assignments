@@ -24,4 +24,5 @@ public class Message {
     public static final String MINIMUM_EXECUTION_QUANTITY_OF_UPDATE_ORDER_HAS_CHANGED = "Minimum execution quantity of update order has changed";
     public static final String CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_FOR_A_STOP_LIMIT_ORDER = "Cannot specify minimum execution quantity for a stop limit order";
     public static final String STOP_LIMIT_ORDER_CAN_NOT_BE_ICEBERG_ORDER = "Stop limit order can not be iceberg order";
+    public static final String CANNOT_SPECIFY_STOP_PRICE_FOR_A_ACTIVATED_ORDER = "Cannot specify stop price for a activated order";
 }
