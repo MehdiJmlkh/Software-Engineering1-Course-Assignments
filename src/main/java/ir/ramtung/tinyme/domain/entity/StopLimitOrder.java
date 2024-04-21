@@ -22,11 +22,16 @@ public class StopLimitOrder extends Order{
         this(orderId, security, side, quantity, price, broker, shareholder, LocalDateTime.now(),  OrderStatus.NEW, stopPrice);
     }
 
-    public boolean queuesBefore(StopLimitOrder other) {
-        if (other.getSide() == Side.BUY)
-            return stopPrice < other.getStopPrice();
+    @Override
+    public boolean queuesBefore(Order other) {
+        if (other instanceof StopLimitOrder stopLimitOrder) {
+            if (other.getSide() == Side.BUY)
+                return stopPrice < stopLimitOrder.getStopPrice();
+            else
+                return stopPrice > stopLimitOrder.getStopPrice();
+        }
         else
-            return stopPrice > other.getStopPrice();
+            return super.queuesBefore(other);
     }
 
     public boolean isActivatable(int marketPrice) {
