@@ -30,4 +30,8 @@ public class StopLimitOrder extends Order{
         else
             return stopPrice >= marketPrice;
     }
+
+    public Order activate() {
+        return new Order(orderId, security, side, quantity, price, broker, shareholder, entryTime);
+    }
 }
