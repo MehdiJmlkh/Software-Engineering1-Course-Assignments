@@ -472,6 +472,11 @@ public class OrderHandlerTest {
 
     @Test
     void delete_stop_limit_order(){
-        //todo
+        setupOrderBook();
+        broker1.increaseCreditBy(100_000_000);
+        security.setMarketPrice(17000);
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC",20, LocalDateTime.now(), Side.SELL,2000, 15800,broker1.getBrokerId(), shareholder.getShareholderId(), 0, 0, 20000));
+        orderHandler.handleDeleteOrder(new DeleteOrderRq(2, "ABC", Side.SELL, 20));
+        verify(eventPublisher).publish(new OrderDeletedEvent(2, 20));
     }
 }
