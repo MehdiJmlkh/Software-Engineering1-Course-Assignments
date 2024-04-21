@@ -113,6 +113,12 @@ public class OrderHandler {
             errors.add(Message.ORDER_MINIMUM_EXECUTION_QUANTITY_NOT_POSITIVE);
         if (enterOrderRq.getMinimumExecutionQuantity() > enterOrderRq.getQuantity())
             errors.add(Message.MINIMUM_EXECUTION_QUANTITY_NOT_LESS_THAN_OR_EQUAL_TO_QUANTITY);
+        if (enterOrderRq.getStopPrice() > 0) {
+            if (enterOrderRq.getMinimumExecutionQuantity() > 0)
+                errors.add(Message.CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_FOR_A_STOP_LIMIT_ORDER);
+            if (enterOrderRq.getPeakSize() > 0)
+                errors.add(Message.STOP_LIMIT_ORDER_CAN_NOT_BE_ICEBERG_ORDER);
+        }
 
         Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
         if (security == null)

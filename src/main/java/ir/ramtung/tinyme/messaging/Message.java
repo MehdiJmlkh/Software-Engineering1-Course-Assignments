@@ -22,4 +22,6 @@ public class Message {
     public static final String SELLER_HAS_NOT_ENOUGH_POSITIONS = "Seller has not enough positions";
     public static final String ORDER_HAS_NOT_EXECUTED_MINIMUM_EXECUTION_QUANTITY = "Order has not executed minimum execution quantity";
     public static final String MINIMUM_EXECUTION_QUANTITY_OF_UPDATE_ORDER_HAS_CHANGED = "Minimum execution quantity of update order has changed";
+    public static final String CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_FOR_A_STOP_LIMIT_ORDER = "Cannot specify minimum execution quantity for a stop limit order";
+    public static final String STOP_LIMIT_ORDER_CAN_NOT_BE_ICEBERG_ORDER = "Stop limit order can not be iceberg order";
 }
