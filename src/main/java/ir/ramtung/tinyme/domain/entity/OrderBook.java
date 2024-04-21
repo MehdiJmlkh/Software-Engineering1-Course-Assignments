@@ -21,7 +21,7 @@ public class OrderBook {
     }
 
     public void enqueue(Order order) {
-        List<Order> queue = getQueue(order.getSide(), order.isStopped());
+        List<Order> queue = getQueue(order.getSide(), order instanceof StopLimitOrder);
         ListIterator<Order> it = queue.listIterator();
         while (it.hasNext()) {
             if (order.queuesBefore(it.next())) {
@@ -95,9 +95,5 @@ public class OrderBook {
                 .filter(order -> order.getShareholder().equals(shareholder))
                 .mapToInt(Order::getTotalQuantity)
                 .sum();
-    }
-
-    public int marketPrice(Side side) {
-        return getQueue(side).getFirst().getPrice();
     }
 }
