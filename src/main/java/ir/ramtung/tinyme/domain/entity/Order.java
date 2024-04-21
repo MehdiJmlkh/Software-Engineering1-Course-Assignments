@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import org.springframework.http.server.DelegatingServerHttpResponse;
 
 import java.time.LocalDateTime;
 
@@ -27,9 +28,8 @@ public class Order {
     @Builder.Default
     protected OrderStatus status = OrderStatus.NEW;
     protected int minimumExecutionQuantity = 0;
-    protected int stopPrice;
 
-    public Order(long orderId, Security security, Side side, int quantity, int price, Broker broker, Shareholder shareholder, LocalDateTime entryTime, OrderStatus status, int minimumExecutionQuantity, int stopPrice) {
+    public Order(long orderId, Security security, Side side, int quantity, int price, Broker broker, Shareholder shareholder, LocalDateTime entryTime, OrderStatus status, int minimumExecutionQuantity) {
         this.orderId = orderId;
         this.security = security;
         this.side = side;
@@ -40,12 +40,7 @@ public class Order {
         this.shareholder = shareholder;
         this.status = status;
         this.minimumExecutionQuantity = minimumExecutionQuantity;
-        this.stopPrice = stopPrice;
     }
-
-    public Order(long orderId, Security security, Side side, int quantity, int price, Broker broker, Shareholder shareholder, LocalDateTime entryTime, OrderStatus status, int minimumExecutionQuantity) {
-        this(orderId, security, side, quantity, price, broker, shareholder, entryTime, status, minimumExecutionQuantity, (side == Side.BUY) ? 0 : (int)POSITIVE_INFINITY);
-        }
 
     public Order(long orderId, Security security, Side side, int quantity, int price, Broker broker, Shareholder shareholder, LocalDateTime entryTime, OrderStatus status) {
         this(orderId, security, side, quantity, price, broker, shareholder, entryTime,  status, 0);
@@ -53,10 +48,6 @@ public class Order {
 
     public Order(long orderId, Security security, Side side, int quantity, int price, Broker broker, Shareholder shareholder, LocalDateTime entryTime, int minimumExecutionQuantity) {
         this(orderId, security, side, quantity, price, broker, shareholder, entryTime,  OrderStatus.NEW, minimumExecutionQuantity);
-    }
-
-    public Order(long orderId, Security security, Side side, int quantity, int price, Broker broker, Shareholder shareholder, LocalDateTime entryTime, int minimumExecutionQuantity, int stopPrice) {
-        this(orderId, security, side, quantity, price, broker, shareholder, entryTime,  OrderStatus.NEW, minimumExecutionQuantity, stopPrice);
     }
 
     public Order(long orderId, Security security, Side side, int quantity, int price, Broker broker, Shareholder shareholder, LocalDateTime entryTime) {
@@ -97,25 +88,15 @@ public class Order {
     }
 
     public boolean queuesBefore(Order order) {
-        if (order.getSide() == Side.BUY) {
-            if (isStopped())
-                return stopPrice < order.getStopPrice();
-            else
-                return price > order.getPrice();
-        } else {
-            if(isStopped())
-                return stopPrice > order.getStopPrice();
-            else
-                return price < order.getPrice();
-        }
+        if (order.getSide() == Side.BUY)
+            return price > order.getPrice();
+        else
+            return price < order.getPrice();
+
     }
 
     public void queue() {
         status = OrderStatus.QUEUED;
-    }
-
-    public void stop() {
-        status = OrderStatus.STOPPED;
     }
 
     public boolean isQuantityIncreased(int newQuantity) {
@@ -139,16 +120,5 @@ public class Order {
 
     public boolean isNew() {
         return status == OrderStatus.NEW;
-    }
-
-    public boolean isStopped() {
-        return status == OrderStatus.STOPPED;
-    }
-
-    public boolean isActivatable(int marketPrice) {
-        if (side == Side.BUY)
-            return stopPrice >= marketPrice;
-        else
-            return stopPrice <= marketPrice;
     }
 }
