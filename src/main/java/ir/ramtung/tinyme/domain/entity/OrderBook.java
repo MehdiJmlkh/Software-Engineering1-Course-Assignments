@@ -71,6 +71,19 @@ public class OrderBook {
             return null;
     }
 
+    public StopLimitOrder activateFirst(Side side, int marketPrice) {
+        var queue = getQueue(side, true);
+        StopLimitOrder order;
+        if (!queue.isEmpty()) {
+            order = (StopLimitOrder) queue.getFirst();
+            if (order.isActivatable(marketPrice)) {
+                queue.removeFirst();
+                return order;
+            }
+        }
+        return null;
+    }
+
     public void putBack(Order order) {
         LinkedList<Order> queue = getQueue(order.getSide());
         order.queue();

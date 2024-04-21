@@ -96,4 +96,13 @@ public class Matcher {
         return result;
     }
 
+    public MatchResult activateStoppedOrder(Security security) {
+        var stopLimitOrder = security.getOrderBook().activateFirst(Side.BUY, security.getMarketPrice());
+        if (stopLimitOrder == null)
+            stopLimitOrder = security.getOrderBook().activateFirst(Side.SELL, security.getMarketPrice());
+        if (stopLimitOrder == null)
+            return null;
+        Order order = stopLimitOrder.activate();
+        return execute(order);
+    }
 }
