@@ -7,10 +7,7 @@ import ir.ramtung.tinyme.domain.service.OrderHandler;
 import ir.ramtung.tinyme.messaging.EventPublisher;
 import ir.ramtung.tinyme.messaging.Message;
 import ir.ramtung.tinyme.messaging.TradeDTO;
-import ir.ramtung.tinyme.messaging.event.OrderAcceptedEvent;
-import ir.ramtung.tinyme.messaging.event.OrderExecutedEvent;
-import ir.ramtung.tinyme.messaging.event.OrderRejectedEvent;
-import ir.ramtung.tinyme.messaging.event.OrderUpdatedEvent;
+import ir.ramtung.tinyme.messaging.event.*;
 import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.repository.BrokerRepository;
@@ -399,5 +396,41 @@ public class OrderHandlerTest {
         orderHandler.handleEnterOrder(EnterOrderRq.createUpdateOrderRq(1, "ABC", 1, LocalDateTime.now(), Side.BUY, 40, 570, broker3.getBrokerId(), shareholder.getShareholderId(), 0,30));
 
         verify(eventPublisher).publish(new OrderRejectedEvent(1, 1, List.of(Message.MINIMUM_EXECUTION_QUANTITY_OF_UPDATE_ORDER_HAS_CHANGED)));
+    }
+
+    void setupOrderBook() {
+        List<Order> orders = Arrays.asList(
+                new Order(1, security, Side.BUY, 304, 15700, broker1, shareholder),
+                new Order(2, security, Side.BUY, 43, 15500, broker1, shareholder),
+                new Order(3, security, Side.BUY, 445, 15450, broker1, shareholder),
+                new Order(4, security, Side.BUY, 526, 15450, broker1, shareholder),
+                new Order(5, security, Side.BUY, 1000, 15400, broker1, shareholder),
+                new Order(6, security, Side.SELL, 350, 15800, broker1, shareholder),
+                new Order(7, security, Side.SELL, 285, 15810, broker1, shareholder),
+                new Order(8, security, Side.SELL, 800, 15810, broker1, shareholder),
+                new Order(9, security, Side.SELL, 340, 15820, broker1, shareholder),
+                new Order(10, security, Side.SELL, 65, 15820, broker1, shareholder),
+                new StopLimitOrder(11, security, Side.BUY, 340, 15700, broker1, shareholder, 15500),
+                new StopLimitOrder(12, security, Side.BUY, 200, 15750, broker1, shareholder, 15600),
+                new StopLimitOrder(13, security, Side.BUY, 500, 15800, broker1, shareholder, 15650),
+                new StopLimitOrder(14, security, Side.SELL, 320, 15500, broker1, shareholder, 15600),
+                new StopLimitOrder(15, security, Side.SELL, 85, 15350, broker1, shareholder, 15500),
+                new StopLimitOrder(16, security, Side.SELL, 85, 15300, broker1, shareholder, 15400)
+        );
+        orders.forEach(order -> security.getOrderBook().enqueue(order));
+    }
+
+    @Test
+    void new_buy_stop_limit_order_triggered() {
+        setupOrderBook();
+        broker1.increaseCreditBy(100_000_000);
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.BUY, 50, 15800, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
+
+        verify(eventPublisher).publish(new OrderAcceptedEvent(1, 17));
+        verify(eventPublisher).publish(any(OrderExecutedEvent.class));
+        orderHandler.checkNewActivation(security, 1);
+        verify(eventPublisher).publish(any(OrderActivatedEvent.class));
+        verify(eventPublisher).publish(any(OrderActivatedEvent.class));
+        verify(eventPublisher).publish(any(OrderActivatedEvent.class));
     }
 }

@@ -71,7 +71,7 @@ public class OrderHandler {
             if (!matchResult.trades().isEmpty()) {
                 eventPublisher.publish(new OrderExecutedEvent(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
             }
-            checkNewActivation(security, enterOrderRq.getRequestId());
+//            checkNewActivation(security, enterOrderRq.getRequestId());
         } catch (InvalidRequestException ex) {
             eventPublisher.publish(new OrderRejectedEvent(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), ex.getReasons()));
         }
@@ -83,7 +83,8 @@ public class OrderHandler {
             order.getBroker().increaseCreditBy((long) order.getQuantity() * order.getPrice());
 
             MatchResult matchResult = matcher.execute(order);
-            eventPublisher.publish(new OrderActivatedEvent(requestId, order.getOrderId()));
+//            eventPublisher.publish(new OrderActivatedEvent(requestId, order.getOrderId()));
+            eventPublisher.publish(new OrderAcceptedEvent(requestId, order.getOrderId()));
             if (!matchResult.trades().isEmpty()) {
                 eventPublisher.publish(new OrderExecutedEvent(requestId, order.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
             }
