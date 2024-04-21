@@ -71,8 +71,21 @@ public class OrderHandler {
             if (!matchResult.trades().isEmpty()) {
                 eventPublisher.publish(new OrderExecutedEvent(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
             }
+            checkNewActivation(security, enterOrderRq.getRequestId());
         } catch (InvalidRequestException ex) {
             eventPublisher.publish(new OrderRejectedEvent(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), ex.getReasons()));
+        }
+    }
+
+    public void checkNewActivation(Security security, long requestId) {
+        Order order;
+        while ((order = security.triggerOrder()) != null) {
+            order.getBroker().increaseCreditBy((long) order.getQuantity() * order.getPrice());
+
+            MatchResult matchResult = matcher.execute(order);
+            if (!matchResult.trades().isEmpty()) {
+                eventPublisher.publish(new OrderExecutedEvent(requestId, order.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
+            }
         }
     }
 
