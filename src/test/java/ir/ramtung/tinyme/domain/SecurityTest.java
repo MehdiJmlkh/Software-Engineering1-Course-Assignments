@@ -135,5 +135,12 @@ class SecurityTest {
         assertThatNoException().isThrownBy(() -> security.updateOrder(updateOrderRq, matcher));
         assertThat(security.getOrderBook().getBuyQueue().get(2).getOrderId()).isEqualTo(3);
     }
+    @Test
+    void validate_market_price(){
+        Order order = new Order(50, security, Side.SELL, 304, 15600, broker, shareholder);
+        matcher.execute(order);
+        assertThat(security.getOrderBook().getBuyQueue().get(0).getOrderId()).isEqualTo(2);
+        assertThat(security.getMarketPrice()).isEqualTo(15700);
+    }
 
 }

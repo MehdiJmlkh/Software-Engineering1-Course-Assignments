@@ -27,6 +27,7 @@ public class BrokerCreditTest {
     private Security security;
     private Broker broker1;
     private Broker broker2;
+    private Broker broker3;
     private Shareholder shareholder;
     private OrderBook orderBook;
     private List<Order> orders;
@@ -38,6 +39,7 @@ public class BrokerCreditTest {
         security = Security.builder().build();
         broker1 = Broker.builder().credit(100_000_000L).build();
         broker2 = Broker.builder().credit(100_000_000L).build();
+        broker3 = Broker.builder().credit(0).build();
         shareholder = Shareholder.builder().build();
         shareholder.incPosition(security, 100_000);
         orderBook = security.getOrderBook();
@@ -175,6 +177,15 @@ public class BrokerCreditTest {
 
         assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
         assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
+    }
+
+    @Test
+    void buyer_has_not_enough_credit_for_stop_order(){
+        broker3.increaseCreditBy(15300);
+        Order order = new Order(1, security, Side.SELL, 304, 15650, broker1, shareholder);
+        StopLimitOrder stopLimitOrder = new StopLimitOrder(20, security, Side.BUY, 2000, 15700, broker3, shareholder, 15300);
+        MatchResult result = matcher.execute(stopLimitOrder);
+        assertThat(result.outcome()).isEqualTo(MatchingOutcome.NOT_ENOUGH_CREDIT);
     }
     
 }

@@ -441,4 +441,28 @@ public class OrderHandlerTest {
 
         assertThat(security.getOrderBook().getSellQueue().size()).isEqualTo(8);
     }
+
+
+    @Test
+    void stop_order_can_not_have_minimum_execution_quantity(){
+        setupOrderBook();
+        broker1.increaseCreditBy(100_000_000);
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC",20, LocalDateTime.now(), Side.SELL,2000, 15800,broker1.getBrokerId(), shareholder.getShareholderId(), 0, 200, 15000));
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 20, any()));
+
+    }
+
+    @Test
+    void stop_order_con_not_be_ice_burg_order(){
+        setupOrderBook();
+        broker1.increaseCreditBy(100_000_000);
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC",20, LocalDateTime.now(), Side.SELL,2000, 15800,broker1.getBrokerId(), shareholder.getShareholderId(), 200, 0, 15000));
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 20, any()));
+    }
+
+
+    @Test
+    void delete_stop_limit_order(){
+
+    }
 }
