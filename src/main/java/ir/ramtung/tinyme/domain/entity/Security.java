@@ -102,6 +102,15 @@ public class Security {
         return matchResult;
     }
 
+    public Order triggerOrder() {
+        var stopLimitOrder = getOrderBook().activateFirst(Side.BUY, getMarketPrice());
+        if (stopLimitOrder == null)
+            stopLimitOrder = getOrderBook().activateFirst(Side.SELL, getMarketPrice());
+        if (stopLimitOrder == null)
+            return null;
+        return stopLimitOrder.activate();
+    }
+
     private void updateMarketPrice(MatchResult matchResult) {
         if (!matchResult.trades().isEmpty()) {
             marketPrice = matchResult.trades().getLast().getPrice();

@@ -100,13 +100,4 @@ public class Matcher {
         return result;
     }
 
-    public Order activateStoppedOrder(Security security) {
-        var stopLimitOrder = security.getOrderBook().activateFirst(Side.BUY, security.getMarketPrice());
-        if (stopLimitOrder == null)
-            stopLimitOrder = security.getOrderBook().activateFirst(Side.SELL, security.getMarketPrice());
-        if (stopLimitOrder == null)
-            return null;
-
-        return stopLimitOrder.activate();
-    }
 }
