@@ -443,7 +443,7 @@ public class OrderHandlerTest {
 
 
     @Test
-    void thee_sell_stop_limit_order_triggered() {
+    void sell_stop_limit_order_triggered_after_updating() {
         setupOrderBook();
         security.setMarketPrice(15650);
         broker1.increaseCreditBy(100_000_000);
