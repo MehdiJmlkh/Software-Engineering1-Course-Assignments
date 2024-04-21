@@ -410,9 +410,9 @@ public class OrderHandlerTest {
                 new Order(8, security, Side.SELL, 800, 15810, broker1, shareholder),
                 new Order(9, security, Side.SELL, 340, 15820, broker1, shareholder),
                 new Order(10, security, Side.SELL, 65, 15820, broker1, shareholder),
-                new StopLimitOrder(11, security, Side.BUY, 340, 15700, broker1, shareholder, 15500),
-                new StopLimitOrder(12, security, Side.BUY, 200, 15750, broker1, shareholder, 15600),
-                new StopLimitOrder(13, security, Side.BUY, 500, 15800, broker1, shareholder, 15650),
+                new StopLimitOrder(11, security, Side.BUY, 340, 15750, broker1, shareholder, 15700),
+                new StopLimitOrder(12, security, Side.BUY, 200, 15850, broker1, shareholder, 15800),
+                new StopLimitOrder(13, security, Side.BUY, 500, 15850, broker1, shareholder, 15850),
                 new StopLimitOrder(14, security, Side.SELL, 320, 15500, broker1, shareholder, 15600),
                 new StopLimitOrder(15, security, Side.SELL, 85, 15350, broker1, shareholder, 15500),
                 new StopLimitOrder(16, security, Side.SELL, 85, 15300, broker1, shareholder, 15400)
@@ -421,24 +421,33 @@ public class OrderHandlerTest {
     }
 
     @Test
-    void three_buy_stop_limit_order_triggered() {
+    void two_buy_stop_limit_order_triggered() {
         setupOrderBook();
         broker1.increaseCreditBy(100_000_000);
         orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.BUY, 50, 15800, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
         verify(eventPublisher).publish(new OrderAcceptedEvent(1, 17));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 11));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 12));
-        verify(eventPublisher).publish(new OrderActivatedEvent(1, 13));
+
     }
 
     @Test
-    void three_sell_stop_limit_order_triggered() {
+    void two_sell_stop_limit_order_triggered() {
         setupOrderBook();
         broker1.increaseCreditBy(100_000_000);
         orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.SELL, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
         verify(eventPublisher).publish(new OrderAcceptedEvent(1, 17));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 14));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 15));
+    }
+
+
+    @Test
+    void thee_sell_stop_limit_order_triggered() {
+        setupOrderBook();
+        security.setMarketPrice(15650);
+        broker1.increaseCreditBy(100_000_000);
+        orderHandler.handleEnterOrder(EnterOrderRq.createUpdateOrderRq(1, "ABC", 16, LocalDateTime.now(), Side.SELL, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0,15650));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 16));
     }
 }
