@@ -30,9 +30,14 @@ public class Security {
             return MatchResult.notEnoughPositions();
         Order order;
         if (enterOrderRq.getPeakSize() == 0)
-            order = new Order(enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
-                    enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                    enterOrderRq.getEntryTime(), enterOrderRq.getMinimumExecutionQuantity());
+            if(enterOrderRq.getStopPrice() == 0)
+                order = new Order(enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
+                        enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
+                        enterOrderRq.getEntryTime(), enterOrderRq.getMinimumExecutionQuantity());
+            else
+                order = new StopLimitOrder(enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
+                        enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
+                        enterOrderRq.getEntryTime(), enterOrderRq.getStopPrice());
         else
             order = new IcebergOrder(enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
                     enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
