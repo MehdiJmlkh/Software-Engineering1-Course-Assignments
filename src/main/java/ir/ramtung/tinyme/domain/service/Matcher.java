@@ -62,10 +62,14 @@ public class Matcher {
 
     public MatchResult execute(Order order) {
         Order orderSnapshot = order.snapshot();
-        if (order instanceof StopLimitOrder stopLimitOrder)
-            if (!stopLimitOrder.isActivatable(order.getSecurity().getMarketPrice())){
+        if (order instanceof StopLimitOrder stopLimitOrder) {
+            if (!order.getBroker().hasEnoughCredit((long) order.getQuantity() * order.getPrice()))
+                return MatchResult.notEnoughCredit();
+            if (!stopLimitOrder.isActivatable(order.getSecurity().getMarketPrice())) {
+                order.getBroker().decreaseCreditBy((long) order.getQuantity() * order.getPrice());
                 order.getSecurity().getOrderBook().enqueue(order);
                 return MatchResult.notActivatable();
+            }
         }
 
         MatchResult result = match(order);
@@ -96,13 +100,13 @@ public class Matcher {
         return result;
     }
 
-    public MatchResult activateStoppedOrder(Security security) {
+    public Order activateStoppedOrder(Security security) {
         var stopLimitOrder = security.getOrderBook().activateFirst(Side.BUY, security.getMarketPrice());
         if (stopLimitOrder == null)
             stopLimitOrder = security.getOrderBook().activateFirst(Side.SELL, security.getMarketPrice());
         if (stopLimitOrder == null)
             return null;
-        Order order = stopLimitOrder.activate();
-        return execute(order);
+
+        return stopLimitOrder.activate();
     }
 }
