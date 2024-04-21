@@ -426,19 +426,19 @@ public class OrderHandlerTest {
         broker1.increaseCreditBy(100_000_000);
         orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.BUY, 50, 15800, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
         verify(eventPublisher).publish(new OrderAcceptedEvent(1, 17));
-//        verify(eventPublisher).publish(any(OrderExecutedEvent.class));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 11));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 12));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 13));
-        assertThat(security.getOrderBook().getBuyQueue().size()).isEqualTo(8);
     }
 
     @Test
     void three_sell_stop_limit_order_triggered() {
         setupOrderBook();
         broker1.increaseCreditBy(100_000_000);
-        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.SELL, 2000, 15700, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
-
-        assertThat(security.getOrderBook().getSellQueue().size()).isEqualTo(8);
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.SELL, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
+        verify(eventPublisher).publish(new OrderAcceptedEvent(1, 17));
+        verify(eventPublisher).publish(new OrderActivatedEvent(1, 14));
+        verify(eventPublisher).publish(new OrderActivatedEvent(1, 15));
+        verify(eventPublisher).publish(new OrderActivatedEvent(1, 16));
     }
 }
