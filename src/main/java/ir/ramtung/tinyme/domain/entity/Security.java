@@ -44,7 +44,6 @@ public class Security {
                     enterOrderRq.getEntryTime(), enterOrderRq.getPeakSize(), enterOrderRq.getMinimumExecutionQuantity());
 
         MatchResult matchResult = matcher.execute(order);
-        updateMarketPrice(matchResult);
         return matchResult;
     }
 
@@ -100,7 +99,6 @@ public class Security {
                 originalOrder.getBroker().decreaseCreditBy(originalOrder.getValue());
             }
         }
-        updateMarketPrice(matchResult);
         return matchResult;
     }
 
@@ -113,7 +111,7 @@ public class Security {
         return stopLimitOrder.activate();
     }
 
-    private void updateMarketPrice(MatchResult matchResult) {
+    public void updateMarketPrice(MatchResult matchResult) {
         if (!matchResult.trades().isEmpty()) {
             marketPrice = matchResult.trades().getLast().getPrice();
         }

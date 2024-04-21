@@ -5,6 +5,7 @@ import ir.ramtung.tinyme.domain.entity.*;
 import ir.ramtung.tinyme.domain.service.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.internal.matchers.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -161,5 +162,27 @@ public class MatcherTest {
         MatchResult result = matcher.execute(order);
 
         assertThat(result.outcome()).isEqualTo(MatchingOutcome.EXECUTED);
+    }
+
+    @Test
+    void new_buy_stop_limit_order_failed_to_activate() {
+        Order order = new Order(11, security, Side.SELL, 500, 15500, broker, shareholder);
+        Order stopLimitOrder = new StopLimitOrder(12, security, Side.BUY, 2000, 15700, broker, shareholder, 15600);
+        matcher.execute(order);
+        MatchResult result = matcher.execute(stopLimitOrder);
+
+        assertThat(security.getMarketPrice()).isEqualTo(15500);
+        assertThat(result.outcome()).isEqualTo(MatchingOutcome.NOT_ACTIVATABLE);
+    }
+
+    @Test
+    void new_sell_stop_limit_order_failed_to_activate() {
+        Order order = new Order(11, security, Side.SELL, 500, 15500, broker, shareholder);
+        Order stopLimitOrder = new StopLimitOrder(12, security, Side.SELL, 2000, 15700, broker, shareholder, 15300);
+        matcher.execute(order);
+        MatchResult result = matcher.execute(stopLimitOrder);
+
+        assertThat(security.getMarketPrice()).isEqualTo(15500);
+        assertThat(result.outcome()).isEqualTo(MatchingOutcome.NOT_ACTIVATABLE);
     }
 }

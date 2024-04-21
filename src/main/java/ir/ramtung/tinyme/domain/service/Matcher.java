@@ -97,6 +97,7 @@ public class Matcher {
                 trade.getSell().getShareholder().decPosition(trade.getSecurity(), trade.getQuantity());
             }
         }
+        order.getSecurity().updateMarketPrice(result);
         return result;
     }
 
