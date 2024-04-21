@@ -48,7 +48,7 @@ public class EnterOrderRq {
     }
 
     private EnterOrderRq(OrderEntryType orderEntryType, long requestId, String securityIsin, long orderId, LocalDateTime entryTime, Side side, int quantity, int price, long brokerId, long shareholderId, int peakSize, int minimumExecutionQuantity) {
-        this(orderEntryType, requestId, securityIsin, orderId, entryTime, side, quantity, price, brokerId, shareholderId, peakSize, minimumExecutionQuantity, (side == Side.BUY) ? 0 : (int)POSITIVE_INFINITY);
+        this(orderEntryType, requestId, securityIsin, orderId, entryTime, side, quantity, price, brokerId, shareholderId, peakSize, minimumExecutionQuantity, 0);
     }
 
 
