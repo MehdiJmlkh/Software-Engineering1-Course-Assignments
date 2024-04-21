@@ -20,6 +20,7 @@ public class Security {
     private int lotSize = 1;
     @Builder.Default
     private OrderBook orderBook = new OrderBook();
+    private int marketPrice;
 
     public MatchResult newOrder(EnterOrderRq enterOrderRq, Broker broker, Shareholder shareholder, Matcher matcher) {
         if (enterOrderRq.getSide() == Side.SELL &&
@@ -30,7 +31,7 @@ public class Security {
         if (enterOrderRq.getPeakSize() == 0)
             order = new Order(enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
                     enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                    enterOrderRq.getEntryTime(), enterOrderRq.getMinimumExecutionQuantity(), enterOrderRq.getStopPrice());
+                    enterOrderRq.getEntryTime(), enterOrderRq.getMinimumExecutionQuantity());
         else
             order = new IcebergOrder(enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
                     enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
@@ -90,5 +91,11 @@ public class Security {
             }
         }
         return matchResult;
+    }
+
+    private void updateMarketPrice(MatchResult matchResult) {
+        if (!matchResult.trades().isEmpty()) {
+            marketPrice = matchResult.trades().getLast().getPrice();
+        }
     }
 }
