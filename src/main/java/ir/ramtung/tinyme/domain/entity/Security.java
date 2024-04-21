@@ -43,7 +43,9 @@ public class Security {
                     enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
                     enterOrderRq.getEntryTime(), enterOrderRq.getPeakSize(), enterOrderRq.getMinimumExecutionQuantity());
 
-        return matcher.execute(order);
+        MatchResult matchResult = matcher.execute(order);
+        updateMarketPrice(matchResult);
+        return matchResult;
     }
 
     public void deleteOrder(DeleteOrderRq deleteOrderRq) throws InvalidRequestException {
@@ -96,6 +98,7 @@ public class Security {
                 originalOrder.getBroker().decreaseCreditBy(originalOrder.getValue());
             }
         }
+        updateMarketPrice(matchResult);
         return matchResult;
     }
 
