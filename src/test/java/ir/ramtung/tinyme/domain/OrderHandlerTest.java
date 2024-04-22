@@ -418,10 +418,11 @@ public class OrderHandlerTest {
                 new StopLimitOrder(16, security, Side.SELL, 85, 15300, broker1, shareholder, 15400)
         );
         orders.forEach(order -> security.getOrderBook().enqueue(order));
+        security.setMarketPrice(15650);
     }
 
     @Test
-    void two_buy_stop_limit_order_triggered() {
+    void two_buy_stop_limit_order_triggered_after_new_request() {
         setupOrderBook();
         broker1.increaseCreditBy(100_000_000);
         orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.BUY, 50, 15800, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
@@ -432,7 +433,7 @@ public class OrderHandlerTest {
     }
 
     @Test
-    void two_sell_stop_limit_order_triggered() {
+    void two_sell_stop_limit_order_triggered_after_new_request() {
         setupOrderBook();
         broker1.increaseCreditBy(100_000_000);
         orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.SELL, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
@@ -445,7 +446,6 @@ public class OrderHandlerTest {
     @Test
     void sell_stop_limit_order_triggered_after_updating() {
         setupOrderBook();
-        security.setMarketPrice(15650);
         broker1.increaseCreditBy(100_000_000);
         orderHandler.handleEnterOrder(EnterOrderRq.createUpdateOrderRq(1, "ABC", 16, LocalDateTime.now(), Side.SELL, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0,15650));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 16));
@@ -453,31 +453,24 @@ public class OrderHandlerTest {
 
 
     @Test
-    void stop_order_can_not_have_minimum_execution_quantity(){
+    void stop_limit_order_can_not_have_minimum_execution_quantity(){
         setupOrderBook();
-        broker1.increaseCreditBy(100_000_000);
         orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC",20, LocalDateTime.now(), Side.SELL,2000, 15800,broker1.getBrokerId(), shareholder.getShareholderId(), 0, 200, 15000));
-        verify(eventPublisher).publish(new OrderRejectedEvent(1, 20, any()));
-
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 20, List.of(Message.CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_FOR_A_STOP_LIMIT_ORDER)));
     }
 
     @Test
-    void stop_order_con_not_be_ice_burg_order(){
+    void stop_limit_order_con_not_be_ice_burg_order(){
         setupOrderBook();
-        broker1.increaseCreditBy(100_000_000);
         orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC",20, LocalDateTime.now(), Side.SELL,2000, 15800,broker1.getBrokerId(), shareholder.getShareholderId(), 200, 0, 15000));
-        verify(eventPublisher).publish(new OrderRejectedEvent(1, 20, any()));
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 20, List.of(Message.STOP_LIMIT_ORDER_CAN_NOT_BE_ICEBERG_ORDER)));
     }
 
 
     @Test
     void delete_stop_limit_order(){
         setupOrderBook();
-        broker1.increaseCreditBy(100_000_000);
-        security.setMarketPrice(17000);
-        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC",20, LocalDateTime.now(), Side.SELL,2000, 15800,broker1.getBrokerId(), shareholder.getShareholderId(), 0, 0, 20000));
-        orderHandler.handleDeleteOrder(new DeleteOrderRq(2, "ABC", Side.SELL, 20));
-        verify(eventPublisher).publish(new OrderDeletedEvent(2, 20));
-        //delete
+        orderHandler.handleDeleteOrder(new DeleteOrderRq(2, "ABC", Side.BUY, 11));
+        verify(eventPublisher).publish(new OrderDeletedEvent(2, 11));
     }
 }
