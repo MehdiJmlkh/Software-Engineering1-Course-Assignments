@@ -422,24 +422,32 @@ public class OrderHandlerTest {
     }
 
     @Test
-    void two_buy_stop_limit_order_triggered_after_new_request() {
+    void after_a_new_request_two_buy_stop_limit_order_triggered_and_the_second_one_executed() {
         setupOrderBook();
         broker1.increaseCreditBy(100_000_000);
         orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.BUY, 50, 15800, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
         verify(eventPublisher).publish(new OrderAcceptedEvent(1, 17));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 11));
+        Trade trade1 = new Trade(security, 15800, 200,
+                new StopLimitOrder(12, security, Side.BUY, 200, 15850, broker1, shareholder, 15800),
+                new Order(6, security, Side.SELL, 350, 15800, broker1, shareholder));
+        verify(eventPublisher).publish(new OrderExecutedEvent(1, 12, List.of(new TradeDTO(trade1))));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 12));
 
     }
 
     @Test
-    void two_sell_stop_limit_order_triggered_after_new_request() {
+    void after_a_new_request_two_sell_stop_limit_order_triggered_and_the_second_one_executed() {
         setupOrderBook();
         broker1.increaseCreditBy(100_000_000);
-        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.SELL, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.SELL, 2000, 15500, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
         verify(eventPublisher).publish(new OrderAcceptedEvent(1, 17));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 14));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 15));
+        Trade trade1 = new Trade(security, 15450, 85,
+                new Order(3, security, Side.BUY, 445, 15450, broker1, shareholder),
+                new StopLimitOrder(15, security, Side.SELL, 85, 15350, broker1, shareholder, 15500));
+        verify(eventPublisher).publish(new OrderExecutedEvent(1, 15, List.of(new TradeDTO(trade1))));
     }
 
 
