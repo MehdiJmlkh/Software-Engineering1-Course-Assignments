@@ -482,7 +482,14 @@ public class OrderHandlerTest {
         orderHandler.handleEnterOrder(EnterOrderRq.createUpdateOrderRq(1, "ABC", 11, LocalDateTime.now(), Side.BUY, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0,15650));
         verify(eventPublisher).publish(new OrderRejectedEvent(1, 11, List.of(Message.CANNOT_SPECIFY_STOP_PRICE_FOR_A_ACTIVATED_ORDER)));
     }
-    
+
+    @Test
+    void stop_price_update_does_not_trigger_the_order() {
+        setupOrderBook();
+        broker1.increaseCreditBy(100_000_000);
+        orderHandler.handleEnterOrder(EnterOrderRq.createUpdateOrderRq(1, "ABC", 16, LocalDateTime.now(), Side.SELL, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0,15600));
+        assertThat(security.getOrderBook().getStopSellQueue()).isEqualTo(Arrays.asList(orders.get(13), orders.get(15), orders.get(14)));
+    }
 
     @Test
     void delete_stop_limit_order(){
