@@ -47,6 +47,7 @@ public class OrderHandlerTest {
     private Broker broker1;
     private Broker broker2;
     private Broker broker3;
+    private List<Order> orders;
 
     @BeforeEach
     void setup() {
@@ -399,7 +400,7 @@ public class OrderHandlerTest {
     }
 
     void setupOrderBook() {
-        List<Order> orders = Arrays.asList(
+        orders = Arrays.asList(
                 new Order(1, security, Side.BUY, 304, 15700, broker1, shareholder),
                 new Order(2, security, Side.BUY, 43, 15500, broker1, shareholder),
                 new Order(3, security, Side.BUY, 445, 15450, broker1, shareholder),
@@ -473,6 +474,15 @@ public class OrderHandlerTest {
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 16));
     }
 
+    @Test
+    void update_stop_price_of_triggered_order_rejected() {
+        setupOrderBook();
+        broker1.increaseCreditBy(100_000_000);
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.BUY, 50, 15800, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
+        orderHandler.handleEnterOrder(EnterOrderRq.createUpdateOrderRq(1, "ABC", 11, LocalDateTime.now(), Side.BUY, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0,15650));
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 11, List.of(Message.CANNOT_SPECIFY_STOP_PRICE_FOR_A_ACTIVATED_ORDER)));
+    }
+    
 
     @Test
     void delete_stop_limit_order(){
