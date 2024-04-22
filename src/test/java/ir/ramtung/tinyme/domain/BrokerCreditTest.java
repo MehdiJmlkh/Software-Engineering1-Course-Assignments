@@ -199,7 +199,6 @@ public class BrokerCreditTest {
             security.deleteOrder(new DeleteOrderRq(1, security.getIsin(), Side.BUY, 20));
             assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
         } catch (Exception ignored) {}
-
     }
 
     @Test
@@ -212,7 +211,14 @@ public class BrokerCreditTest {
             security.deleteOrder(new DeleteOrderRq(1, security.getIsin(), Side.SELL, 20));
             assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
         } catch (Exception ignored) {}
-
     }
-    
+
+    @Test
+    void new_buy_stop_limit_order_matches_completely_with_two_sells() {
+        security.setMarketPrice(15400);
+        Order order = new StopLimitOrder(11, security, Side.BUY, 500, 15830, broker2, shareholder, 15500);
+        MatchResult result = matcher.match(order);
+        assertThat(broker1.getCredit()).isEqualTo(107_901_500L);
+        assertThat(broker2.getCredit()).isEqualTo(92_098_500L);
+    }
 }
