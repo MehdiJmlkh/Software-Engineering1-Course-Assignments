@@ -422,6 +422,20 @@ public class OrderHandlerTest {
     }
 
     @Test
+    void stop_limit_order_can_not_have_minimum_execution_quantity(){
+        setupOrderBook();
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC",20, LocalDateTime.now(), Side.SELL,2000, 15800,broker1.getBrokerId(), shareholder.getShareholderId(), 0, 200, 15000));
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 20, List.of(Message.CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_FOR_A_STOP_LIMIT_ORDER)));
+    }
+
+    @Test
+    void stop_limit_order_con_not_be_ice_burg_order(){
+        setupOrderBook();
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC",20, LocalDateTime.now(), Side.SELL,2000, 15800,broker1.getBrokerId(), shareholder.getShareholderId(), 200, 0, 15000));
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 20, List.of(Message.STOP_LIMIT_ORDER_CAN_NOT_BE_ICEBERG_ORDER)));
+    }
+
+    @Test
     void after_a_new_request_two_buy_stop_limit_order_triggered_and_the_second_one_executed() {
         setupOrderBook();
         broker1.increaseCreditBy(100_000_000);
@@ -457,21 +471,6 @@ public class OrderHandlerTest {
         broker1.increaseCreditBy(100_000_000);
         orderHandler.handleEnterOrder(EnterOrderRq.createUpdateOrderRq(1, "ABC", 16, LocalDateTime.now(), Side.SELL, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0,15650));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 16));
-    }
-
-
-    @Test
-    void stop_limit_order_can_not_have_minimum_execution_quantity(){
-        setupOrderBook();
-        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC",20, LocalDateTime.now(), Side.SELL,2000, 15800,broker1.getBrokerId(), shareholder.getShareholderId(), 0, 200, 15000));
-        verify(eventPublisher).publish(new OrderRejectedEvent(1, 20, List.of(Message.CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_FOR_A_STOP_LIMIT_ORDER)));
-    }
-
-    @Test
-    void stop_limit_order_con_not_be_ice_burg_order(){
-        setupOrderBook();
-        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC",20, LocalDateTime.now(), Side.SELL,2000, 15800,broker1.getBrokerId(), shareholder.getShareholderId(), 200, 0, 15000));
-        verify(eventPublisher).publish(new OrderRejectedEvent(1, 20, List.of(Message.STOP_LIMIT_ORDER_CAN_NOT_BE_ICEBERG_ORDER)));
     }
 
 
