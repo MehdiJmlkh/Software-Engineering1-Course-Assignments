@@ -492,6 +492,14 @@ public class OrderHandlerTest {
     }
 
     @Test
+    void update_price_of_stop_limit_order_does_not_change_anything() {
+        setupOrderBook();
+        broker1.increaseCreditBy(100_000_000);
+        orderHandler.handleEnterOrder(EnterOrderRq.createUpdateOrderRq(1, "ABC", 16, LocalDateTime.now(), Side.SELL, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0));
+        assertThat(security.getOrderBook().getStopSellQueue()).isEqualTo(orders.subList(13, 16));
+    }
+
+    @Test
     void delete_stop_limit_order(){
         setupOrderBook();
         orderHandler.handleDeleteOrder(new DeleteOrderRq(2, "ABC", Side.BUY, 11));
