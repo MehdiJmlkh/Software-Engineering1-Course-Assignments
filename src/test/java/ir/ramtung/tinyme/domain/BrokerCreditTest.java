@@ -190,13 +190,26 @@ public class BrokerCreditTest {
     }
 
     @Test
-    void delete_stop_limit_order(){
+    void add_and_delete_buy_stop_limit_order(){
         security.setMarketPrice(15500);
         StopLimitOrder stopLimitOrder = new StopLimitOrder(20, security, Side.BUY, 100, 15700, broker1, shareholder, 15600);
         matcher.execute(stopLimitOrder);
         assertThat(broker1.getCredit()).isEqualTo(98_430_000L);
         try {
             security.deleteOrder(new DeleteOrderRq(1, security.getIsin(), Side.BUY, 20));
+            assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
+        } catch (Exception ignored) {}
+
+    }
+
+    @Test
+    void and_and_delete_sell_stop_limit_order(){
+        security.setMarketPrice(15500);
+        StopLimitOrder stopLimitOrder = new StopLimitOrder(20, security, Side.SELL, 100, 15700, broker1, shareholder, 15400);
+        matcher.execute(stopLimitOrder);
+        assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
+        try {
+            security.deleteOrder(new DeleteOrderRq(1, security.getIsin(), Side.SELL, 20));
             assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
         } catch (Exception ignored) {}
 

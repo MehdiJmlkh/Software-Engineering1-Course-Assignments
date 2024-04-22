@@ -63,10 +63,11 @@ public class Matcher {
     public MatchResult execute(Order order) {
         Order orderSnapshot = order.snapshot();
         if (order instanceof StopLimitOrder stopLimitOrder) {
-            if (!order.getBroker().hasEnoughCredit((long) order.getQuantity() * order.getPrice()))
+            if (order.getSide() == Side.BUY && !order.getBroker().hasEnoughCredit((long) order.getQuantity() * order.getPrice()))
                 return MatchResult.notEnoughCredit();
             if (!stopLimitOrder.isActivatable(order.getSecurity().getMarketPrice())) {
-                order.getBroker().decreaseCreditBy((long) order.getQuantity() * order.getPrice());
+                if (order.getSide() == Side.BUY)
+                    order.getBroker().decreaseCreditBy((long) order.getQuantity() * order.getPrice());
                 order.getSecurity().getOrderBook().enqueue(order);
                 return MatchResult.notActivatable();
             }
