@@ -69,6 +69,12 @@ class OrderBookTest {
     }
 
     @Test
+    void finds_the_last_order_by_id_in_stop_queue() {
+        assertThat(security.getOrderBook().findByOrderId(Side.SELL, 16))
+                .isEqualTo(orders.get(15));
+    }
+
+    @Test
     void removes_the_first_order_by_id() {
         OrderBook orderBook = security.getOrderBook();
         orderBook.removeByOrderId(Side.BUY, 1);
