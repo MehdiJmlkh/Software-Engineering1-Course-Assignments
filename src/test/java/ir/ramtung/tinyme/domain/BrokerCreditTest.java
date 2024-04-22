@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -186,6 +187,19 @@ public class BrokerCreditTest {
         StopLimitOrder stopLimitOrder = new StopLimitOrder(20, security, Side.BUY, 2000, 15700, broker3, shareholder, 15300);
         MatchResult result = matcher.execute(stopLimitOrder);
         assertThat(result.outcome()).isEqualTo(MatchingOutcome.NOT_ENOUGH_CREDIT);
+    }
+
+    @Test
+    void delete_stop_limit_order(){
+        security.setMarketPrice(15500);
+        StopLimitOrder stopLimitOrder = new StopLimitOrder(20, security, Side.BUY, 100, 15700, broker1, shareholder, 15600);
+        matcher.execute(stopLimitOrder);
+        assertThat(broker1.getCredit()).isEqualTo(98_430_000L);
+        try {
+            security.deleteOrder(new DeleteOrderRq(1, security.getIsin(), Side.BUY, 20));
+            assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
+        } catch (Exception ignored) {}
+
     }
     
 }
