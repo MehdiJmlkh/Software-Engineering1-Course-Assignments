@@ -12,6 +12,18 @@ public enum Side {
         public Side opposite() {
             return BUY;
         }
+    },
+    STOP_BUY {
+        @Override
+        public Side opposite() {
+            return STOP_SELL;
+        }
+    },
+    STOP_SELL {
+        @Override
+        public Side opposite() {
+            return STOP_BUY;
+        }
     };
 
     public static Side parse(String s) {
