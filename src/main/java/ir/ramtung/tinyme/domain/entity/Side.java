@@ -6,11 +6,17 @@ public enum Side {
         public Side opposite() {
             return SELL;
         }
+        public Side stop() {
+            return STOP_BUY;
+        }
     },
     SELL {
         @Override
         public Side opposite() {
             return BUY;
+        }
+        public Side stop() {
+            return STOP_SELL;
         }
     },
     STOP_BUY {
@@ -18,11 +24,17 @@ public enum Side {
         public Side opposite() {
             return STOP_SELL;
         }
+        public Side stop() {
+            return this;
+        }
     },
     STOP_SELL {
         @Override
         public Side opposite() {
             return STOP_BUY;
+        }
+        public Side stop() {
+            return this;
         }
     };
 
@@ -36,4 +48,5 @@ public enum Side {
     }
 
     public abstract Side opposite();
+    public abstract Side stop();
 }
