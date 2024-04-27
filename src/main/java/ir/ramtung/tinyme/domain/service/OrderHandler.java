@@ -73,21 +73,23 @@ public class OrderHandler {
             if (!matchResult.trades().isEmpty()) {
                 eventPublisher.publish(new OrderExecutedEvent(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
             }
-            checkNewActivation(security, enterOrderRq.getRequestId());
+            checkNewActivation(enterOrderRq);
         } catch (InvalidRequestException ex) {
             eventPublisher.publish(new OrderRejectedEvent(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), ex.getReasons()));
         }
     }
 
-    public void checkNewActivation(Security security, long requestId) {
+    public void checkNewActivation(EnterOrderRq enterOrderRq) {
         Order order;
+        Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
         while ((order = security.triggerOrder()) != null) {
-            order.getBroker().increaseCreditBy((long) order.getQuantity() * order.getPrice());
+            order.getBroker().increaseCreditBy(order.getValue());
 
             MatchResult matchResult = matcher.execute(order);
-            eventPublisher.publish(new OrderActivatedEvent(requestId, order.getOrderId()));
+
+            eventPublisher.publish(new OrderActivatedEvent(enterOrderRq.getRequestId(), order.getOrderId()));
             if (!matchResult.trades().isEmpty()) {
-                eventPublisher.publish(new OrderExecutedEvent(requestId, order.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
+                eventPublisher.publish(new OrderExecutedEvent(enterOrderRq.getRequestId(), order.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
             }
         }
     }
