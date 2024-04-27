@@ -2,9 +2,7 @@ package ir.ramtung.tinyme.domain.entity;
 
 import lombok.Getter;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 @Getter
 public class OrderBook {
@@ -42,36 +40,40 @@ public class OrderBook {
                                   stopped ? stopSellQueue : sellQueue;
     }
 
-    public Order findByOrderId(Side side, long orderId) {
+    private ListIterator<Order> findOrderIteratorById(Side side, long orderId) {
         var queue = getQueue(side);
-        for (Order order : queue) {
-            if (order.getOrderId() == orderId)
-                return order;
+        var it = queue.listIterator();
+        while (it.hasNext()) {
+            if (it.next().getOrderId() == orderId) {
+                return it;
+            }
         }
+
         queue = getQueue(side, true);
-        for (Order order : queue) {
-            if (order.getOrderId() == orderId)
-                return order;
+        it = queue.listIterator();
+        while (it.hasNext()) {
+            if (it.next().getOrderId() == orderId) {
+                return it;
+            }
+        }
+
+        return null;
+    }
+
+    public Order findByOrderId(Side side, long orderId) {
+        var it = findOrderIteratorById(side, orderId);
+        if (it != null){
+            it.previous();
+            return it.next();
         }
         return null;
     }
 
     public boolean removeByOrderId(Side side, long orderId) {
-        var queue = getQueue(side);
-        var it = queue.listIterator();
-        while (it.hasNext()) {
-            if (it.next().getOrderId() == orderId) {
-                it.remove();
-                return true;
-            }
-        }
-        queue = getQueue(side, true);
-        it = queue.listIterator();
-        while (it.hasNext()) {
-            if (it.next().getOrderId() == orderId) {
-                it.remove();
-                return true;
-            }
+        var it = findOrderIteratorById(side, orderId);
+        if (it != null){
+            it.remove();
+            return true;
         }
         return false;
     }
