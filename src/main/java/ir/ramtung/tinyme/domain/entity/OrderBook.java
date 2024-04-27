@@ -34,12 +34,12 @@ public class OrderBook {
     }
 
     private LinkedList<Order> getQueue(Side side) {
-        return switch (side) {
-            case BUY -> buyQueue;
-            case SELL -> sellQueue;
-            case STOP_BUY -> stopBuyQueue;
-            case STOP_SELL -> stopSellQueue;
-        };
+        return side == Side.BUY ? buyQueue : sellQueue;
+    }
+
+    private LinkedList<Order> getQueue(Side side, boolean stopped) {
+        return side == Side.BUY ? stopped ? stopBuyQueue : buyQueue :
+                                  stopped ? stopSellQueue : sellQueue;
     }
 
     public Order findByOrderId(Side side, long orderId) {
