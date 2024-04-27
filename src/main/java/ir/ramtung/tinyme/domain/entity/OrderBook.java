@@ -35,9 +35,9 @@ public class OrderBook {
         return side == Side.BUY ? buyQueue : sellQueue;
     }
 
-    private LinkedList<Order> getQueue(Side side, boolean stopped) {
-        return side == Side.BUY ? stopped ? stopBuyQueue : buyQueue :
-                                  stopped ? stopSellQueue : sellQueue;
+    private LinkedList<Order> getQueue(Side side, boolean stop) {
+        return side == Side.BUY ? stop ? stopBuyQueue : buyQueue :
+                                  stop ? stopSellQueue : sellQueue;
     }
 
     private ListIterator<Order> findOrderIteratorById(Side side, long orderId) {
