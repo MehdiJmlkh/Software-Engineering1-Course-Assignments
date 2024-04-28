@@ -239,6 +239,15 @@ public class BrokerCreditTest {
     }
 
     @Test
+    void new_sell_stop_limit_order_matches_partially_with_two_buys() {
+        security.setMarketPrice(15400);
+        Order order = new StopLimitOrder(11, security, Side.SELL, 500, 15500, broker1, shareholder, 15500);
+        matcher.execute(order);
+        assertThat(broker1.getCredit()).isEqualTo(105_439_300L);
+        assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
+    }
+
+    @Test
     void new_sell_stop_limit_order_cannot_activate() {
         security.setMarketPrice(15600);
         Order order = new StopLimitOrder(11, security, Side.SELL, 500, 15830, broker2, shareholder, 15500);
