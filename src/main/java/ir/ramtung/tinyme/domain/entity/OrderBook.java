@@ -40,24 +40,22 @@ public class OrderBook {
                                   stop ? stopSellQueue : sellQueue;
     }
 
-    private ListIterator<Order> findOrderIteratorById(Side side, long orderId) {
-        var queue = getQueue(side);
+    private ListIterator<Order> exploreQueue(LinkedList<Order> queue, long orderId) {
         var it = queue.listIterator();
         while (it.hasNext()) {
             if (it.next().getOrderId() == orderId) {
                 return it;
             }
         }
-
-        queue = getQueue(side, true);
-        it = queue.listIterator();
-        while (it.hasNext()) {
-            if (it.next().getOrderId() == orderId) {
-                return it;
-            }
-        }
-
         return null;
+    }
+
+    private ListIterator<Order> findOrderIteratorById(Side side, long orderId) {
+        var it = exploreQueue(getQueue(side), orderId);
+        if (it != null) {
+            return it;
+        }
+        return exploreQueue(getQueue(side, true), orderId);
     }
 
     public Order findByOrderId(Side side, long orderId) {
