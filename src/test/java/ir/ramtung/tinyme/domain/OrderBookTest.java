@@ -103,6 +103,13 @@ class OrderBookTest {
     }
 
     @Test
+    void fails_to_remove_the_stop_limit_order_by_id() {
+        OrderBook orderBook = security.getOrderBook();
+        assertThat(orderBook.removeByOrderId(Side.BUY, 17)).isEqualTo(false);
+        assertThat(orderBook.getStopBuyQueue()).isEqualTo(orders.subList(10, 13));
+    }
+
+    @Test
     void removes_the_last_order_by_id() {
         OrderBook orderBook = security.getOrderBook();
         orderBook.removeByOrderId(Side.SELL, 10);
