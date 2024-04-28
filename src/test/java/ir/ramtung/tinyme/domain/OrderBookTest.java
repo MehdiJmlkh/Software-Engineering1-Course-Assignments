@@ -82,6 +82,20 @@ class OrderBookTest {
     }
 
     @Test
+    void removes_the_first_stop_limit_order_by_id() {
+        OrderBook orderBook = security.getOrderBook();
+        orderBook.removeByOrderId(Side.BUY, 11);
+        assertThat(orderBook.getStopBuyQueue()).isEqualTo(orders.subList(11, 13));
+    }
+
+    @Test
+    void removes_the_last_stop_limit_order_by_id() {
+        OrderBook orderBook = security.getOrderBook();
+        orderBook.removeByOrderId(Side.SELL, 16);
+        assertThat(orderBook.getStopSellQueue()).isEqualTo(orders.subList(13, 15));
+    }
+
+    @Test
     void fails_to_remove_the_first_order_by_id_in_the_wrong_queue() {
         OrderBook orderBook = security.getOrderBook();
         orderBook.removeByOrderId(Side.SELL, 1);
