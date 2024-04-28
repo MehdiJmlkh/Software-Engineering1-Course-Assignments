@@ -430,7 +430,7 @@ public class OrderHandlerTest {
     }
 
     @Test
-    void stop_limit_order_con_not_be_ice_burg_order(){
+    void stop_limit_order_can_not_be_ice_burg_order(){
         setupOrderBook();
         orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC",20, LocalDateTime.now(), Side.SELL,2000, 15800,broker1.getBrokerId(), shareholder.getShareholderId(), 200, 0, 15000));
         verify(eventPublisher).publish(new OrderRejectedEvent(1, 20, List.of(Message.STOP_LIMIT_ORDER_CAN_NOT_BE_ICEBERG_ORDER)));

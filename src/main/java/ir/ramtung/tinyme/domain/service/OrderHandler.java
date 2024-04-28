@@ -83,7 +83,7 @@ public class OrderHandler {
         Order order;
         while ((order = security.triggerOrder()) != null) {
             order.getBroker().increaseCreditBy((long) order.getQuantity() * order.getPrice());
-
+            //only for buy
             MatchResult matchResult = matcher.execute(order);
             eventPublisher.publish(new OrderActivatedEvent(requestId, order.getOrderId()));
             if (!matchResult.trades().isEmpty()) {
