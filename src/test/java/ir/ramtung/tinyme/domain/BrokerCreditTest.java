@@ -3,9 +3,14 @@ package ir.ramtung.tinyme.domain;
 import ir.ramtung.tinyme.config.MockedJMSTestConfig;
 import ir.ramtung.tinyme.domain.entity.*;
 import ir.ramtung.tinyme.domain.service.Matcher;
+import ir.ramtung.tinyme.domain.service.OrderHandler;
+import ir.ramtung.tinyme.messaging.EventPublisher;
 import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.messaging.request.OrderEntryType;
+import ir.ramtung.tinyme.repository.BrokerRepository;
+import ir.ramtung.tinyme.repository.SecurityRepository;
+import ir.ramtung.tinyme.repository.ShareholderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +30,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import(MockedJMSTestConfig.class)
 @DirtiesContext
 public class BrokerCreditTest {
+    @Autowired
+    OrderHandler orderHandler;
+    @Autowired
+    EventPublisher eventPublisher;
+    @Autowired
+    SecurityRepository securityRepository;
+    @Autowired
+    BrokerRepository brokerRepository;
+    @Autowired
+    ShareholderRepository shareholderRepository;
     private Security security;
     private Broker broker1;
     private Broker broker2;
@@ -37,7 +52,8 @@ public class BrokerCreditTest {
 
     @BeforeEach
     void setupOrderBook() {
-        security = Security.builder().build();
+        security = Security.builder().isin("ABC").build();
+        securityRepository.addSecurity(security);
         broker1 = Broker.builder().credit(100_000_000L).build();
         broker2 = Broker.builder().credit(100_000_000L).build();
         broker3 = Broker.builder().credit(0).build();
@@ -231,4 +247,28 @@ public class BrokerCreditTest {
         assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
         assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
     }
+
+    @Test
+    void sell_stop_limit_order_triggered() {
+        security.setMarketPrice(15600);
+        Order order = new StopLimitOrder(11, security, Side.SELL, 300, 15650, broker2, shareholder, 15500);
+        MatchResult result = matcher.execute(order);
+        security.setMarketPrice(15500);
+        orderHandler.checkNewActivation(EnterOrderRq.createUpdateOrderRq(1,"ABC", 1, LocalDateTime.now(), Side.BUY, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0, 2000));
+        assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
+        assertThat(broker2.getCredit()).isEqualTo(104_710_000L);
+    }
+
+    @Test
+    void buy_stop_limit_order_triggered() {
+        security.setMarketPrice(15300);
+        Order order = new StopLimitOrder(11, security, Side.BUY, 300, 15850, broker2, shareholder, 15500);
+        MatchResult result = matcher.execute(order);
+        security.setMarketPrice(15500);
+        orderHandler.checkNewActivation(EnterOrderRq.createUpdateOrderRq(1,"ABC", 1, LocalDateTime.now(), Side.BUY, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0, 2000));
+        assertThat(broker1.getCredit()).isEqualTo(104_740_000L);
+        assertThat(broker2.getCredit()).isEqualTo(95_260_000L);
+    }
+
+
 }
