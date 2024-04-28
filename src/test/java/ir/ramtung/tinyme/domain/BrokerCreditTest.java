@@ -218,7 +218,7 @@ public class BrokerCreditTest {
     }
 
     @Test
-    void and_and_delete_sell_stop_limit_order(){
+    void add_and_delete_sell_stop_limit_order(){
         security.setMarketPrice(15500);
         StopLimitOrder stopLimitOrder = new StopLimitOrder(20, security, Side.SELL, 100, 15700, broker1, shareholder, 15400);
         matcher.execute(stopLimitOrder);
