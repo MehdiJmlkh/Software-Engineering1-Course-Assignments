@@ -91,7 +91,6 @@ public class OrderBook {
             order = (StopLimitOrder) queue.getFirst();
             if (order.isActivatable(marketPrice)) {
                 queue.removeFirst();
-                //return queue.pop();
                 return order;
             }
         }
