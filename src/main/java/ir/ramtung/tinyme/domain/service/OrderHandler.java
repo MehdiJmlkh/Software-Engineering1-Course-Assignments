@@ -84,7 +84,8 @@ public class OrderHandler {
         Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
         while ((order = security.triggerOrder()) != null) {
 
-            order.getBroker().increaseCreditBy( order.getValue());
+            if (order.getSide() == Side.BUY)
+                order.getBroker().increaseCreditBy(order.getValue());
 
             MatchResult matchResult = matcher.execute(order);
 
