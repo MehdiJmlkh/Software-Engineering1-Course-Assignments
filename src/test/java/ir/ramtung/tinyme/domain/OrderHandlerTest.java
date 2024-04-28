@@ -501,4 +501,5 @@ public class OrderHandlerTest {
         orderHandler.handleDeleteOrder(new DeleteOrderRq(2, "ABC", Side.BUY, 11));
         verify(eventPublisher).publish(new OrderDeletedEvent(2, 11));
     }
+
 }
