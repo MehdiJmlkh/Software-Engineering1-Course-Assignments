@@ -6,6 +6,7 @@ import ir.ramtung.tinyme.messaging.exception.InvalidRequestException;
 import ir.ramtung.tinyme.messaging.EventPublisher;
 import ir.ramtung.tinyme.messaging.TradeDTO;
 import ir.ramtung.tinyme.messaging.event.*;
+import ir.ramtung.tinyme.messaging.request.ChangeMatchingStateRq;
 import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.messaging.request.OrderEntryType;
@@ -107,6 +108,17 @@ public class OrderHandler {
         }
     }
 
+    public void handleChangeMatchingState(ChangeMatchingStateRq changeMatchingStateRq) {
+        try {
+            validateChangeMatchingStateRq(changeMatchingStateRq);
+            Security security = securityRepository.findSecurityByIsin(changeMatchingStateRq.getSecurityIsin());
+            security.changeMatchingState(changeMatchingStateRq);
+            eventPublisher.publish(new SecurityStateChangedEvent(changeMatchingStateRq.getSecurityIsin(), changeMatchingStateRq.getTargetState()));
+        } catch (InvalidRequestException ex) {
+//            TODO
+        }
+    }
+
     private void validateEnterOrderRq(EnterOrderRq enterOrderRq) throws InvalidRequestException {
         List<String> errors = new LinkedList<>();
         if (enterOrderRq.getOrderId() <= 0)
@@ -150,6 +162,14 @@ public class OrderHandler {
         if (deleteOrderRq.getOrderId() <= 0)
             errors.add(Message.INVALID_ORDER_ID);
         if (securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin()) == null)
+            errors.add(Message.UNKNOWN_SECURITY_ISIN);
+        if (!errors.isEmpty())
+            throw new InvalidRequestException(errors);
+    }
+
+    private void validateChangeMatchingStateRq(ChangeMatchingStateRq changeMatchingStateRq) throws InvalidRequestException {
+        List<String> errors = new LinkedList<>();
+        if (securityRepository.findSecurityByIsin(changeMatchingStateRq.getSecurityIsin()) == null)
             errors.add(Message.UNKNOWN_SECURITY_ISIN);
         if (!errors.isEmpty())
             throw new InvalidRequestException(errors);
