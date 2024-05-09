@@ -1,10 +1,12 @@
 package ir.ramtung.tinyme.domain.entity;
 
 import ir.ramtung.tinyme.messaging.exception.InvalidRequestException;
+import ir.ramtung.tinyme.messaging.request.ChangeMatchingStateRq;
 import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.domain.service.Matcher;
 import ir.ramtung.tinyme.messaging.Message;
+import ir.ramtung.tinyme.messaging.request.MatchingState;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,6 +26,8 @@ public class Security {
     private OrderBook orderBook = new OrderBook();
     @Builder.Default
     private int marketPrice = 0;
+    @Builder.Default
+    private MatchingState matchingState = MatchingState.CONTINUOUS;
 
     public MatchResult newOrder(EnterOrderRq enterOrderRq, Broker broker, Shareholder shareholder, Matcher matcher) {
         if (enterOrderRq.getSide() == Side.SELL &&
@@ -101,6 +105,10 @@ public class Security {
             }
         }
         return matchResult;
+    }
+
+    public void changeMatchingState(ChangeMatchingStateRq changeMatchingStateRq) {
+        matchingState = changeMatchingStateRq.getTargetState();
     }
 
     public Order triggerOrder() {
