@@ -11,6 +11,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 @Getter
@@ -115,6 +117,25 @@ public class Security {
 
     public void changeMatchingState(ChangeMatchingStateRq changeMatchingStateRq) {
         matchingState = changeMatchingStateRq.getTargetState();
+    }
+
+    public List<Integer> getOpeningPriceWithQuantity() {
+        var openingPrice = orderBook.allPrices().stream()
+                .map(price -> Arrays.asList(tradableQuantity(price),
+                                            Math.abs(marketPrice - price),
+                                            price))
+                .sorted(Comparator.comparing(
+                        (List<Integer> tuple) -> -tuple.get(0))
+                        .thenComparing(tuple -> tuple.get(1))
+                        .thenComparing(tuple -> tuple.get(2)))
+                .toList()
+                .get(0);
+
+        return Arrays.asList(openingPrice.get(0) , openingPrice.get(2));
+    }
+
+    private int tradableQuantity(int openingPrice) {
+        return Math.min(orderBook.totalTradableQuantity(openingPrice, Side.BUY), orderBook.totalTradableQuantity(openingPrice, Side.SELL));
     }
 
     public Order triggerOrder() {
