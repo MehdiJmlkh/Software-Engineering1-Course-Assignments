@@ -131,4 +131,11 @@ public class OrderBook {
                 .mapToInt(Order::getTotalQuantity)
                 .sum();
     }
+
+    public HashSet<Integer> allPrices() {
+        HashSet<Integer> prices = new HashSet<>();
+        prices.addAll(getSellQueue().stream().mapToInt(Order::getPrice).boxed().toList());
+        prices.addAll(getBuyQueue().stream().mapToInt(Order::getPrice).boxed().toList());
+        return prices;
+    }
 }
