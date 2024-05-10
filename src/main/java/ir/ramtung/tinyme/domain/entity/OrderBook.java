@@ -123,4 +123,12 @@ public class OrderBook {
                 .mapToInt(Order::getTotalQuantity)
                 .sum();
     }
+
+    public int totalTradableQuantity(int tradePrice, Side side) {
+        var queue = getQueue(side);
+        return queue.stream()
+                .filter(order -> order.matches(tradePrice))
+                .mapToInt(Order::getTotalQuantity)
+                .sum();
+    }
 }
