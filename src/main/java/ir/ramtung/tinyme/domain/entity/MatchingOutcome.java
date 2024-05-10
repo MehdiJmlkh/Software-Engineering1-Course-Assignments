@@ -2,6 +2,7 @@ package ir.ramtung.tinyme.domain.entity;
 
 public enum MatchingOutcome {
     EXECUTED,
+    QUEUED_DURING_AUCTION_STATE,
     NOT_ACTIVATABLE,
     NOT_ENOUGH_CREDIT,
     NOT_ENOUGH_POSITIONS,

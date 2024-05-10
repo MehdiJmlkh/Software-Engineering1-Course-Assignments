@@ -32,6 +32,10 @@ public final class MatchResult {
         return new MatchResult(MatchingOutcome.NOT_EQUAL_MINIMUM_EXECUTION_QUANTITY, null, new LinkedList<>());
     }
 
+    public static MatchResult queuedDuringAuctionState() {
+        return new MatchResult(MatchingOutcome.QUEUED_DURING_AUCTION_STATE, null, new LinkedList<>());
+    }
+
     private MatchResult(MatchingOutcome outcome, Order remainder, LinkedList<Trade> trades) {
         this.outcome = outcome;
         this.remainder = remainder;
