@@ -25,4 +25,6 @@ public class Message {
     public static final String CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_FOR_A_STOP_LIMIT_ORDER = "Cannot specify minimum execution quantity for a stop limit order";
     public static final String STOP_LIMIT_ORDER_CAN_NOT_BE_ICEBERG_ORDER = "Stop limit order can not be iceberg order";
     public static final String CANNOT_SPECIFY_STOP_PRICE_FOR_A_ACTIVATED_ORDER = "Cannot specify stop price for a activated order";
+    public static final String CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_IN_THE_AUCTION_STATE = "Cannot specify minimum execution quantity for an order in the auction state";
+    public static final String CANNOT_SUBMIT_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE = "Cannot submit stop limit order in the auction state";
 }
