@@ -77,6 +77,13 @@ public class Order {
             return price <= other.price;
     }
 
+    public boolean matches(int tradePrice) {
+        if (side == Side.BUY)
+            return price >= tradePrice;
+        else
+            return price <= tradePrice;
+    }
+
     public void decreaseQuantity(int amount) {
         if (amount > quantity)
             throw new IllegalArgumentException();
