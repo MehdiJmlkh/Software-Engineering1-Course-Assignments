@@ -119,8 +119,8 @@ public class Security {
         matchingState = changeMatchingStateRq.getTargetState();
     }
 
-    public List<Integer> getOpeningPriceWithQuantity() {
-        var openingPrice = orderBook.allPrices().stream()
+    public int getOpeningPrice() {
+        return orderBook.allPrices().stream()
                 .map(price -> Arrays.asList(tradableQuantity(price),
                                             Math.abs(marketPrice - price),
                                             price))
@@ -129,12 +129,10 @@ public class Security {
                         .thenComparing(tuple -> tuple.get(1))
                         .thenComparing(tuple -> tuple.get(2)))
                 .toList()
-                .get(0);
-
-        return Arrays.asList(openingPrice.get(0) , openingPrice.get(2));
+                .get(0).get(2);
     }
 
-    private int tradableQuantity(int openingPrice) {
+    public int tradableQuantity(int openingPrice) {
         return Math.min(orderBook.totalTradableQuantity(openingPrice, Side.BUY), orderBook.totalTradableQuantity(openingPrice, Side.SELL));
     }
 
