@@ -48,8 +48,14 @@ public class Security {
             order = new IcebergOrder(enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
                     enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
                     enterOrderRq.getEntryTime(), enterOrderRq.getPeakSize(), enterOrderRq.getMinimumExecutionQuantity());
-
-        return matcher.execute(order);
+        if (matchingState == MatchingState.AUCTION) {
+            if (order.getSide() == Side.BUY)
+                order.getBroker().decreaseCreditBy(order.getValue());
+            orderBook.enqueue(order);
+            return MatchResult.queuedDuringAuctionState();
+        }
+        else
+            return matcher.execute(order);
     }
 
     public void deleteOrder(DeleteOrderRq deleteOrderRq) throws InvalidRequestException {
