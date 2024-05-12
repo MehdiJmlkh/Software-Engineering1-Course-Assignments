@@ -3,12 +3,14 @@ package ir.ramtung.tinyme.domain.service;
 import ir.ramtung.tinyme.domain.entity.*;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 
 @Service
 public class Matcher {
-    public MatchResult match(Order newOrder) {
+    public MatchResult match(Order newOrder, int openingPrice) {
         OrderBook orderBook = newOrder.getSecurity().getOrderBook();
         LinkedList<Trade> trades = new LinkedList<>();
 
@@ -16,8 +18,8 @@ public class Matcher {
             Order matchingOrder = orderBook.matchWithFirst(newOrder);
             if (matchingOrder == null)
                 break;
-
-            Trade trade = new Trade(newOrder.getSecurity(), matchingOrder.getPrice(), Math.min(newOrder.getQuantity(), matchingOrder.getQuantity()), newOrder, matchingOrder);
+            int price = openingPrice == 0 ? matchingOrder.getPrice() : openingPrice;
+            Trade trade = new Trade(newOrder.getSecurity(), price, Math.min(newOrder.getQuantity(), matchingOrder.getQuantity()), newOrder, matchingOrder);
             if (newOrder.getSide() == Side.BUY) {
                 if (trade.buyerHasEnoughCredit())
                     trade.decreaseBuyersCredit();
@@ -46,6 +48,10 @@ public class Matcher {
         return MatchResult.executed(newOrder, trades);
     }
 
+    public MatchResult match(Order newOrder) {
+        return match(newOrder, 0);
+    }
+
     private void rollbackTrades(Order newOrder, LinkedList<Trade> trades) {
         if (newOrder.getSide() == Side.BUY) {
             newOrder.getBroker().increaseCreditBy(trades.stream().mapToLong(Trade::getTradedValue).sum());
@@ -60,7 +66,7 @@ public class Matcher {
         }
     }
 
-    public MatchResult execute(Order order) {
+    public MatchResult execute(Order order, int openingPrice) {
         Order orderSnapshot = order.snapshot();
         if (order instanceof StopLimitOrder stopLimitOrder) {
             if (order.getSide() == Side.BUY && !order.getBroker().hasEnoughCredit(order.getValue()))
@@ -73,7 +79,7 @@ public class Matcher {
             }
         }
 
-        MatchResult result = match(order);
+        MatchResult result = match(order, openingPrice);
         if (result.outcome() == MatchingOutcome.NOT_ENOUGH_CREDIT)
             return result;
 
@@ -100,6 +106,10 @@ public class Matcher {
         }
         order.getSecurity().updateMarketPrice(result);
         return result;
+    }
+
+    public MatchResult execute(Order order) {
+        return execute(order, 0);
     }
 
 }
