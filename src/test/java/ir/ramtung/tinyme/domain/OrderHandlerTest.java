@@ -8,8 +8,10 @@ import ir.ramtung.tinyme.messaging.EventPublisher;
 import ir.ramtung.tinyme.messaging.Message;
 import ir.ramtung.tinyme.messaging.TradeDTO;
 import ir.ramtung.tinyme.messaging.event.*;
+import ir.ramtung.tinyme.messaging.request.ChangeMatchingStateRq;
 import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
+import ir.ramtung.tinyme.messaging.request.MatchingState;
 import ir.ramtung.tinyme.repository.BrokerRepository;
 import ir.ramtung.tinyme.repository.SecurityRepository;
 import ir.ramtung.tinyme.repository.ShareholderRepository;
@@ -500,5 +502,17 @@ public class OrderHandlerTest {
         setupOrderBook();
         orderHandler.handleDeleteOrder(new DeleteOrderRq(2, "ABC", Side.BUY, 11));
         verify(eventPublisher).publish(new OrderDeletedEvent(2, 11));
+    }
+
+    @Test
+    void change_matching_state_to_auction_works(){
+        orderHandler.handleChangeMatchingState(new ChangeMatchingStateRq("ABC", MatchingState.AUCTION));
+        verify(eventPublisher).publish(new SecurityStateChangedEvent("ABC", MatchingState.AUCTION));
+    }
+
+    @Test
+    void change_matching_state_to_continuous_works(){
+        orderHandler.handleChangeMatchingState(new ChangeMatchingStateRq("ABC", MatchingState.CONTINUOUS));
+        verify(eventPublisher).publish(new SecurityStateChangedEvent("ABC", MatchingState.CONTINUOUS));
     }
 }
