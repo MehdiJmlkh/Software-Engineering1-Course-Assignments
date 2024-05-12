@@ -113,8 +113,12 @@ public class OrderBook {
         return !getQueue(side).isEmpty();
     }
 
-    public void removeFirst(Side side) {
-        getQueue(side).removeFirst();
+    public Order removeFirst(Side side) {
+        try {
+            return getQueue(side).removeFirst();
+        } catch (NoSuchElementException ex) {
+            return null;
+        }
     }
 
     public int totalSellQuantityByShareholder(Shareholder shareholder) {
