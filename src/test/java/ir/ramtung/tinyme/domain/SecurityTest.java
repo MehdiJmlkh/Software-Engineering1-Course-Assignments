@@ -2,10 +2,13 @@ package ir.ramtung.tinyme.domain;
 
 import ir.ramtung.tinyme.config.MockedJMSTestConfig;
 import ir.ramtung.tinyme.domain.entity.*;
+import ir.ramtung.tinyme.messaging.event.OpeningPriceEvent;
 import ir.ramtung.tinyme.messaging.exception.InvalidRequestException;
+import ir.ramtung.tinyme.messaging.request.ChangeMatchingStateRq;
 import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.domain.service.Matcher;
+import ir.ramtung.tinyme.messaging.request.MatchingState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @Import(MockedJMSTestConfig.class)
@@ -141,6 +145,15 @@ class SecurityTest {
         matcher.execute(order);
         assertThat(security.getOrderBook().getBuyQueue().get(0).getOrderId()).isEqualTo(2);
         assertThat(security.getMarketPrice()).isEqualTo(15700);
+    }
+
+    @Test
+    void opening_price_is_equal_to_last_new_sell_order_price(){
+        setupOrderBook();
+        security.setMatchingState(MatchingState.AUCTION);
+        security.getOrderBook().enqueue(new Order(1, security, Side.SELL, 2000, 15400, broker, shareholder));
+        assertThat(security.getOpeningPrice()).isEqualTo(15400);
+        assertThat(security.tradableQuantity()).isEqualTo(2000);
     }
 
 }
