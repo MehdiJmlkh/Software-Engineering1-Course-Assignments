@@ -166,4 +166,12 @@ class SecurityTest {
         assertThat(security.tradableQuantity()).isEqualTo(300);
     }
 
+    @Test
+    void tradable_quantity_is_zero_when_no_order_can_match(){
+        setupOrderBook();
+        security.setMarketPrice(15650);
+        assertThat(security.getOpeningPrice()).isEqualTo(15650);
+        assertThat(security.tradableQuantity()).isEqualTo(0);
+    }
+
 }
