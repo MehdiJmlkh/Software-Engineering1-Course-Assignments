@@ -11,10 +11,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 @Getter
 @Setter
@@ -116,8 +113,13 @@ public class Security {
         return matchResult;
     }
 
-    public void changeMatchingState(ChangeMatchingStateRq changeMatchingStateRq) {
+    public List<MatchResult> changeMatchingState(ChangeMatchingStateRq changeMatchingStateRq, Matcher matcher) {
+        if (matchingState == MatchingState.AUCTION) {
+            matchingState = changeMatchingStateRq.getTargetState();
+            return matcher.openMarket(this, getOpeningPrice());
+        }
         matchingState = changeMatchingStateRq.getTargetState();
+        return new ArrayList<>();
     }
 
     public int getOpeningPrice() {
