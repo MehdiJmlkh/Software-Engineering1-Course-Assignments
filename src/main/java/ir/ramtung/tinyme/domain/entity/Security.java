@@ -13,6 +13,7 @@ import lombok.Setter;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 @Getter
@@ -120,6 +121,8 @@ public class Security {
     }
 
     public int getOpeningPrice() {
+        HashSet<Integer> allPrice = orderBook.allPrices();
+        allPrice.add(marketPrice);
         return orderBook.allPrices().stream()
                 .map(price -> Arrays.asList(tradableQuantity(price),
                                             Math.abs(marketPrice - price),
