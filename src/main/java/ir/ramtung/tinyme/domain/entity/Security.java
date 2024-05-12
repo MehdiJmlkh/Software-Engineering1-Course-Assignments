@@ -141,6 +141,10 @@ public class Security {
         return Math.min(orderBook.totalTradableQuantity(openingPrice, Side.BUY), orderBook.totalTradableQuantity(openingPrice, Side.SELL));
     }
 
+    public int tradableQuantity() {
+        return tradableQuantity(getOpeningPrice());
+    }
+
     public Order triggerOrder() {
         var stopLimitOrder = getOrderBook().activateFirst(Side.BUY, getMarketPrice());
         if (stopLimitOrder == null)
