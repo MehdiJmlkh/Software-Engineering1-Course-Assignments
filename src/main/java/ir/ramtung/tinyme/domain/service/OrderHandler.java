@@ -113,8 +113,15 @@ public class OrderHandler {
         try {
             validateChangeMatchingStateRq(changeMatchingStateRq);
             Security security = securityRepository.findSecurityByIsin(changeMatchingStateRq.getSecurityIsin());
-            security.changeMatchingState(changeMatchingStateRq);
+            List<MatchResult> matchResults = security.changeMatchingState(changeMatchingStateRq, matcher);
+
             eventPublisher.publish(new SecurityStateChangedEvent(changeMatchingStateRq.getSecurityIsin(), changeMatchingStateRq.getTargetState()));
+            for (MatchResult matchResult : matchResults) {
+                for (Trade trade : matchResult.trades()) {
+                    eventPublisher.publish(new TradeEvent(changeMatchingStateRq.getSecurityIsin(),
+                            trade.getPrice(), trade.getQuantity(), trade.getBuy().getOrderId(), trade.getSell().getOrderId()));
+                }
+            }
         } catch (InvalidRequestException ex) {
 //            TODO
         }
