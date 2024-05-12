@@ -112,4 +112,26 @@ public class Matcher {
         return execute(order, 0);
     }
 
+    public List<MatchResult> openMarket(Security security, int openingPrice) {
+        List<MatchResult> matchResults = new ArrayList<>();
+        var orderBook = security.getOrderBook();
+        long sellId = 0, buyId = 0;;
+        while (true) {
+            Order order = orderBook.removeFirst(Side.SELL);
+            if (order == null || sellId == order.getOrderId()) {
+                order = orderBook.removeFirst(Side.BUY);
+                if (order == null || buyId == order.getOrderId())
+                    break;
+                else {
+                    buyId = order.getOrderId();
+                    order.getBroker().increaseCreditBy(order.getValue());
+                }
+            }
+            else
+                sellId = order.getOrderId();
+            matchResults.add(execute(order, openingPrice));
+        }
+        return matchResults;
+    }
+
 }
