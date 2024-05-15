@@ -211,4 +211,26 @@ public class MatcherTest {
         assertThat(matcher.openMarket(security)).isEqualTo(new LinkedList<Trade>());
     }
 
+    @Test
+    void open_market_causes_many_trades_and_remainder_of_buy_order_queued() {
+        addTradableOrder();
+
+        List<Trade> trades = List.of(
+                new Trade(security, 15800, 304, tradableOrders.get(0).snapshotWithQuantity(304), tradableOrders.get(5).snapshotWithQuantity(350)),
+                new Trade(security, 15800, 43, tradableOrders.get(1).snapshotWithQuantity(43), tradableOrders.get(5).snapshotWithQuantity(46)),
+                new Trade(security, 15800, 3, tradableOrders.get(2).snapshotWithQuantity(445), tradableOrders.get(5).snapshotWithQuantity(3)),
+                new Trade(security, 15800, 285, tradableOrders.get(2).snapshotWithQuantity(442), tradableOrders.get(6).snapshotWithQuantity(285)),
+                new Trade(security, 15800, 157, tradableOrders.get(2).snapshotWithQuantity(157), tradableOrders.get(7).snapshotWithQuantity(800)),
+                new Trade(security, 15800, 526, tradableOrders.get(3).snapshotWithQuantity(526), tradableOrders.get(7).snapshotWithQuantity(643)),
+                new Trade(security, 15800, 117, tradableOrders.get(4).snapshotWithQuantity(1000), tradableOrders.get(7).snapshotWithQuantity(117)),
+                new Trade(security, 15800, 340, tradableOrders.get(4).snapshotWithQuantity(883), tradableOrders.get(8).snapshotWithQuantity(340)),
+                new Trade(security, 15800, 65, tradableOrders.get(4).snapshotWithQuantity(543), tradableOrders.get(9).snapshotWithQuantity(65)),
+                new Trade(security, 15800, 350, tradableOrders.get(4).snapshotWithQuantity(478), orders.get(5).snapshotWithQuantity(350))
+        );
+        assertThat(matcher.openMarket(security)).isEqualTo(trades);
+        Order order = tradableOrders.get(4).snapshotWithQuantity(128);
+        order.queue();
+        assertThat(security.getOrderBook().getBuyQueue().getFirst()).isEqualTo(order);
+    }
+
 }
