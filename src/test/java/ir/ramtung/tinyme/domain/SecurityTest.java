@@ -204,4 +204,7 @@ class SecurityTest {
         security.getOrderBook().enqueue(new Order(1, security, Side.BUY, 1500, 15815, broker, shareholder));
         assertThat(security.tradableQuantity()).isEqualTo(1435);
     }
+
+
+
 }
