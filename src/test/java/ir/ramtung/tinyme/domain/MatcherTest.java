@@ -233,4 +233,22 @@ public class MatcherTest {
         assertThat(security.getOrderBook().getBuyQueue().getFirst()).isEqualTo(order);
     }
 
+    @Test
+    void open_market_causes_trades_and_remainder_of_sell_order_queued() {
+        tradableOrders = Arrays.asList(
+                new Order(13, security, Side.BUY, 445, 15950, broker, shareholder),
+                new Order(19, security, Side.SELL, 1000, 15650, broker, shareholder)
+        );
+        tradableOrders.forEach(order -> orderBook.enqueue(order));
+
+        List<Trade> trades = List.of(
+                new Trade(security, 15650, 445, tradableOrders.get(0).snapshotWithQuantity(445), tradableOrders.get(1).snapshotWithQuantity(1000)),
+                new Trade(security, 15650, 304, orders.get(0).snapshotWithQuantity(304), tradableOrders.get(1).snapshotWithQuantity(555))
+        );
+        assertThat(matcher.openMarket(security)).isEqualTo(trades);
+        Order order = tradableOrders.get(1).snapshotWithQuantity(251);
+        order.queue();
+        assertThat(security.getOrderBook().getSellQueue().getFirst()).isEqualTo(order);
+    }
+
 }
