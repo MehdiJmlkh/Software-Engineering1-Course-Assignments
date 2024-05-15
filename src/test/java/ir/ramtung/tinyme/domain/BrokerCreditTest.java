@@ -289,6 +289,11 @@ public class BrokerCreditTest {
         security.newOrder(EnterOrderRq.createNewOrderRq(1, security.getIsin(), 11, LocalDateTime.now(), Side.BUY, 5000, 1000, broker2.getBrokerId(), shareholder.getShareholderId(), 0), broker2, shareholder, matcher);
         assertThat(broker2.getCredit()).isEqualTo(95_000_000L);
     }
-
+    @Test
+    void credit_of_seller_does_not_change_when_auction(){
+        security.setMatchingState(MatchingState.AUCTION);
+        security.newOrder(EnterOrderRq.createNewOrderRq(1, security.getIsin(), 11, LocalDateTime.now(), Side.SELL, 5000, 1000, broker2.getBrokerId(), shareholder.getShareholderId(), 0), broker2, shareholder, matcher);
+        assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
+    }
 
 }
