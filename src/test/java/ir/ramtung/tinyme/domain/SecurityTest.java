@@ -149,7 +149,6 @@ class SecurityTest {
 
     @Test
     void opening_price_is_equal_to_last_new_sell_order_price(){
-        setupOrderBook();
         security.setMatchingState(MatchingState.AUCTION);
         security.getOrderBook().enqueue(new Order(1, security, Side.SELL, 2000, 15400, broker, shareholder));
         assertThat(security.getOpeningPrice()).isEqualTo(15400);
@@ -158,7 +157,6 @@ class SecurityTest {
 
     @Test
     void opening_price_is_equal_to_market_price(){
-        setupOrderBook();
         security.setMatchingState(MatchingState.AUCTION);
         security.setMarketPrice(15650);
         security.getOrderBook().enqueue(new Order(1, security, Side.SELL, 300, 15600, broker, shareholder));
@@ -168,11 +166,9 @@ class SecurityTest {
 
     @Test
     void tradable_quantity_is_zero_when_no_order_can_match(){
-        setupOrderBook();
         security.setMarketPrice(15650);
         assertThat(security.getOpeningPrice()).isEqualTo(15650);
         assertThat(security.tradableQuantity()).isEqualTo(0);
     }
-
 
 }
