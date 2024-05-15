@@ -117,8 +117,12 @@ public class Matcher {
         Order lastOrder = null;
         while (true) {
             Order order = security.getOrderBook().removeFirst(Side.BUY);
-            if (order == null || order.equalIdandQuantity(lastOrder))
+            if (order == null)
                 break;
+            if (order.equalIdandQuantity(lastOrder)) {
+                security.getOrderBook().enqueue(order);
+                break;
+            }
             lastOrder = order.snapshot();
             MatchResult result = execute(order, security.getOpeningPrice());
             if (!result.remainder().equalIdandQuantity(lastOrder))
