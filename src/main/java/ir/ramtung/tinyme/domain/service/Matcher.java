@@ -114,21 +114,12 @@ public class Matcher {
 
     public List<MatchResult> openMarket(Security security) {
         List<MatchResult> matchResults = new ArrayList<>();
-        var orderBook = security.getOrderBook();
-        long sellId = 0, buyId = 0;
+        Order lastOrder = null;
         while (true) {
-            Order order = orderBook.removeFirst(Side.SELL);
-            if (order == null || sellId == order.getOrderId()) {
-                order = orderBook.removeFirst(Side.BUY);
-                if (order == null || buyId == order.getOrderId())
-                    break;
-                else {
-                    buyId = order.getOrderId();
-                    order.getBroker().increaseCreditBy(order.getValue());
-                }
-            }
-            else
-                sellId = order.getOrderId();
+            Order order = security.getOrderBook().removeFirst(Side.BUY);
+            if (order == null || order.equals(lastOrder))
+                break;
+            lastOrder = order.snapshot();
             matchResults.add(execute(order, security.getOpeningPrice()));
         }
         return matchResults;
