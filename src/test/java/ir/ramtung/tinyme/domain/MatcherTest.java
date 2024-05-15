@@ -13,6 +13,7 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -185,4 +186,10 @@ public class MatcherTest {
         assertThat(security.getMarketPrice()).isEqualTo(15500);
         assertThat(result.outcome()).isEqualTo(MatchingOutcome.NOT_ACTIVATABLE);
     }
+
+    @Test
+    void open_market_causes_no_trades() {
+        assertThat(matcher.openMarket(security)).isEqualTo(new LinkedList<MatchResult>());
+    }
+
 }
