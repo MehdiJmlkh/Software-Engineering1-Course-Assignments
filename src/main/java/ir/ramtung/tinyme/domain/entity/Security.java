@@ -113,7 +113,7 @@ public class Security {
         return matchResult;
     }
 
-    public List<MatchResult> changeMatchingState(ChangeMatchingStateRq changeMatchingStateRq, Matcher matcher) {
+    public List<Trade> changeMatchingState(ChangeMatchingStateRq changeMatchingStateRq, Matcher matcher) {
         if (matchingState == MatchingState.AUCTION) {
             matchingState = changeMatchingStateRq.getTargetState();
             return matcher.openMarket(this);

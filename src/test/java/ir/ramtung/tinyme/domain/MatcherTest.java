@@ -4,6 +4,7 @@ import ir.ramtung.tinyme.config.MockedJMSTestConfig;
 import ir.ramtung.tinyme.domain.entity.*;
 import ir.ramtung.tinyme.domain.service.Matcher;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.matchers.Or;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ public class MatcherTest {
     private Shareholder shareholder;
     private OrderBook orderBook;
     private List<Order> orders;
+    private List<Order> tradableOrders;
     @Autowired
     private Matcher matcher;
 
@@ -50,6 +52,23 @@ public class MatcherTest {
             new Order(10, security, Side.SELL, 65, 15820, broker, shareholder)
         );
         orders.forEach(order -> orderBook.enqueue(order));
+    }
+
+    void addTradableOrder() {
+        orderBook = security.getOrderBook();
+        tradableOrders = Arrays.asList(
+                new Order(11, security, Side.BUY, 304, 16500, broker, shareholder),
+                new Order(12, security, Side.BUY, 43, 16000, broker, shareholder),
+                new Order(13, security, Side.BUY, 445, 15950, broker, shareholder),
+                new Order(14, security, Side.BUY, 526, 15950, broker, shareholder),
+                new Order(15, security, Side.BUY, 1000, 15800, broker, shareholder),
+                new Order(16, security, Side.SELL, 350, 15700, broker, shareholder),
+                new Order(17, security, Side.SELL, 285, 15710, broker, shareholder),
+                new Order(18, security, Side.SELL, 800, 15710, broker, shareholder),
+                new Order(19, security, Side.SELL, 340, 15720, broker, shareholder),
+                new Order(20, security, Side.SELL, 65, 15720, broker, shareholder)
+        );
+        tradableOrders.forEach(order -> orderBook.enqueue(order));
     }
 
     @Test
@@ -189,7 +208,7 @@ public class MatcherTest {
 
     @Test
     void open_market_causes_no_trades() {
-        assertThat(matcher.openMarket(security)).isEqualTo(new LinkedList<MatchResult>());
+        assertThat(matcher.openMarket(security)).isEqualTo(new LinkedList<Trade>());
     }
 
 }

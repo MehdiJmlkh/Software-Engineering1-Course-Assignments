@@ -112,19 +112,19 @@ public class Matcher {
         return execute(order, 0);
     }
 
-    public List<MatchResult> openMarket(Security security) {
-        List<MatchResult> matchResults = new ArrayList<>();
+    public List<Trade> openMarket(Security security) {
+        List<Trade> trades = new ArrayList<>();
         Order lastOrder = null;
         while (true) {
             Order order = security.getOrderBook().removeFirst(Side.BUY);
-            if (order == null || order.equals(lastOrder))
+            if (order == null || order.equalIdandQuantity(lastOrder))
                 break;
             lastOrder = order.snapshot();
             MatchResult result = execute(order, security.getOpeningPrice());
-            if (!result.remainder().equals(lastOrder))
-                matchResults.add(result);
+            if (!result.remainder().equalIdandQuantity(lastOrder))
+                trades.addAll(result.trades());
         }
-        return matchResults;
+        return trades;
     }
 
 }
