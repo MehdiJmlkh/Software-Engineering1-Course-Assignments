@@ -171,4 +171,12 @@ class SecurityTest {
         assertThat(security.tradableQuantity()).isEqualTo(0);
     }
 
+    @Test
+    void opening_price_is_equal_to_an_sell_order_price_and_greater_than_market_price(){
+        security.setMatchingState(MatchingState.AUCTION);
+        security.setMarketPrice(15650);
+        security.getOrderBook().enqueue(new Order(1, security, Side.BUY, 1500, 15815, broker, shareholder));
+        assertThat(security.getOpeningPrice()).isEqualTo(15810);
+        assertThat(security.tradableQuantity()).isEqualTo(1435);
+    }
 }
