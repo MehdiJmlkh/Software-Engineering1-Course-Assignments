@@ -174,4 +174,5 @@ class SecurityTest {
         assertThat(security.tradableQuantity()).isEqualTo(0);
     }
 
+
 }

@@ -5,8 +5,10 @@ import ir.ramtung.tinyme.domain.entity.*;
 import ir.ramtung.tinyme.domain.service.Matcher;
 import ir.ramtung.tinyme.domain.service.OrderHandler;
 import ir.ramtung.tinyme.messaging.EventPublisher;
+import ir.ramtung.tinyme.messaging.event.OrderRejectedEvent;
 import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
+import ir.ramtung.tinyme.messaging.request.MatchingState;
 import ir.ramtung.tinyme.messaging.request.OrderEntryType;
 import ir.ramtung.tinyme.repository.BrokerRepository;
 import ir.ramtung.tinyme.repository.SecurityRepository;
@@ -25,6 +27,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @Import(MockedJMSTestConfig.class)
@@ -277,6 +282,12 @@ public class BrokerCreditTest {
         orderHandler.checkNewActivation(EnterOrderRq.createUpdateOrderRq(1,"ABC", 1, LocalDateTime.now(), Side.BUY, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0, 2000));
         assertThat(broker1.getCredit()).isEqualTo(104_740_000L);
         assertThat(broker2.getCredit()).isEqualTo(95_260_000L);
+    }
+    @Test
+    void credit_of_buyer_is_decreased_when_auction(){
+        security.setMatchingState(MatchingState.AUCTION);
+        security.newOrder(EnterOrderRq.createNewOrderRq(1, security.getIsin(), 11, LocalDateTime.now(), Side.BUY, 5000, 1000, broker2.getBrokerId(), shareholder.getShareholderId(), 0), broker2, shareholder, matcher);
+        assertThat(broker2.getCredit()).isEqualTo(95_000_000L);
     }
 
 
