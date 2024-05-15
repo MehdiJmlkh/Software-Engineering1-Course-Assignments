@@ -128,4 +128,10 @@ public class Order {
     public boolean isNew() {
         return status == OrderStatus.NEW;
     }
+
+    public boolean equals(Order other) {
+        if (other == null)
+            return false;
+        return orderId == other.getOrderId() && quantity == other.getQuantity();
+    }
 }
