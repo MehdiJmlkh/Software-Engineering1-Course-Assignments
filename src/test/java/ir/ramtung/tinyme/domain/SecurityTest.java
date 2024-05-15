@@ -152,7 +152,6 @@ class SecurityTest {
         security.setMatchingState(MatchingState.AUCTION);
         security.getOrderBook().enqueue(new Order(1, security, Side.SELL, 2000, 15400, broker, shareholder));
         assertThat(security.getOpeningPrice()).isEqualTo(15400);
-        assertThat(security.tradableQuantity()).isEqualTo(2000);
     }
 
     @Test
@@ -161,14 +160,6 @@ class SecurityTest {
         security.setMarketPrice(15650);
         security.getOrderBook().enqueue(new Order(1, security, Side.SELL, 300, 15600, broker, shareholder));
         assertThat(security.getOpeningPrice()).isEqualTo(15650);
-        assertThat(security.tradableQuantity()).isEqualTo(300);
-    }
-
-    @Test
-    void tradable_quantity_is_zero_when_no_order_can_match(){
-        security.setMarketPrice(15650);
-        assertThat(security.getOpeningPrice()).isEqualTo(15650);
-        assertThat(security.tradableQuantity()).isEqualTo(0);
     }
 
     @Test
@@ -177,6 +168,25 @@ class SecurityTest {
         security.setMarketPrice(15650);
         security.getOrderBook().enqueue(new Order(1, security, Side.BUY, 1500, 15815, broker, shareholder));
         assertThat(security.getOpeningPrice()).isEqualTo(15810);
+    }
+    @Test
+    void tradable_quantity_is_equal_to_last_new_sell_order_quantity(){
+        security.setMatchingState(MatchingState.AUCTION);
+        security.getOrderBook().enqueue(new Order(1, security, Side.SELL, 2000, 15400, broker, shareholder));
+        assertThat(security.tradableQuantity()).isEqualTo(2000);
+    }
+
+    @Test
+    void tradable_quantity_is_zero_when_no_order_can_match(){
+        security.setMarketPrice(15650);
+        assertThat(security.tradableQuantity()).isEqualTo(0);
+    }
+
+    @Test
+    void tradable_quantity_is_equal_to_sum_of_some_sell_order(){
+        security.setMatchingState(MatchingState.AUCTION);
+        security.setMarketPrice(15650);
+        security.getOrderBook().enqueue(new Order(1, security, Side.BUY, 1500, 15815, broker, shareholder));
         assertThat(security.tradableQuantity()).isEqualTo(1435);
     }
 }
