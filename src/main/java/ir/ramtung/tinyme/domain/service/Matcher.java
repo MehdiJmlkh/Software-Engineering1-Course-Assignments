@@ -120,7 +120,9 @@ public class Matcher {
             if (order == null || order.equals(lastOrder))
                 break;
             lastOrder = order.snapshot();
-            matchResults.add(execute(order, security.getOpeningPrice()));
+            MatchResult result = execute(order, security.getOpeningPrice());
+            if (!result.remainder().equals(lastOrder))
+                matchResults.add(result);
         }
         return matchResults;
     }
