@@ -29,12 +29,12 @@ class OrderBookTest {
                 new Order(8, security, Side.SELL, 800, 15810, broker, shareholder),
                 new Order(9, security, Side.SELL, 340, 15820, broker, shareholder),
                 new Order(10, security, Side.SELL, 65, 15820, broker, shareholder),
-                new StopLimitOrder(11, security, Side.BUY, 340, 15750, broker, shareholder, 15700),
-                new StopLimitOrder(12, security, Side.BUY, 200, 15850, broker, shareholder, 15800),
-                new StopLimitOrder(13, security, Side.BUY, 500, 15850, broker, shareholder, 15850),
-                new StopLimitOrder(14, security, Side.SELL, 320, 15500, broker, shareholder, 15600),
-                new StopLimitOrder(15, security, Side.SELL, 85, 15350, broker, shareholder, 15500),
-                new StopLimitOrder(16, security, Side.SELL, 85, 15300, broker, shareholder, 15400)
+                new StopLimitOrder(1, 11, security, Side.BUY, 340, 15750, broker, shareholder, 15700),
+                new StopLimitOrder(2, 12, security, Side.BUY, 200, 15850, broker, shareholder, 15800),
+                new StopLimitOrder(3, 13, security, Side.BUY, 500, 15850, broker, shareholder, 15850),
+                new StopLimitOrder(4, 14, security, Side.SELL, 320, 15500, broker, shareholder, 15600),
+                new StopLimitOrder(5, 15, security, Side.SELL, 85, 15350, broker, shareholder, 15500),
+                new StopLimitOrder(6, 16, security, Side.SELL, 85, 15300, broker, shareholder, 15400)
         );
         orders.forEach(order -> security.getOrderBook().enqueue(order));
     }

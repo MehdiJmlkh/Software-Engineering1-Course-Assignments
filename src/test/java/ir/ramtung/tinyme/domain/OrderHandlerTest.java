@@ -414,12 +414,12 @@ public class OrderHandlerTest {
                 new Order(8, security, Side.SELL, 800, 15810, broker1, shareholder),
                 new Order(9, security, Side.SELL, 340, 15820, broker1, shareholder),
                 new Order(10, security, Side.SELL, 65, 15820, broker1, shareholder),
-                new StopLimitOrder(11, security, Side.BUY, 340, 15750, broker1, shareholder, 15700),
-                new StopLimitOrder(12, security, Side.BUY, 200, 15850, broker1, shareholder, 15800),
-                new StopLimitOrder(13, security, Side.BUY, 500, 15850, broker1, shareholder, 15850),
-                new StopLimitOrder(14, security, Side.SELL, 320, 15500, broker1, shareholder, 15600),
-                new StopLimitOrder(15, security, Side.SELL, 85, 15350, broker1, shareholder, 15500),
-                new StopLimitOrder(16, security, Side.SELL, 85, 15300, broker1, shareholder, 15400)
+                new StopLimitOrder(1, 11, security, Side.BUY, 340, 15750, broker1, shareholder, 15700),
+                new StopLimitOrder(2, 12, security, Side.BUY, 200, 15850, broker1, shareholder, 15800),
+                new StopLimitOrder(3, 13, security, Side.BUY, 500, 15850, broker1, shareholder, 15850),
+                new StopLimitOrder(4, 14, security, Side.SELL, 320, 15500, broker1, shareholder, 15600),
+                new StopLimitOrder(5, 15, security, Side.SELL, 85, 15350, broker1, shareholder, 15500),
+                new StopLimitOrder(6, 16, security, Side.SELL, 85, 15300, broker1, shareholder, 15400)
         );
         orders.forEach(order -> security.getOrderBook().enqueue(order));
         broker1.increaseCreditBy(100_000_000);
@@ -443,28 +443,28 @@ public class OrderHandlerTest {
     @Test
     void after_a_new_request_two_buy_stop_limit_order_triggered_and_the_second_one_executed() {
         setupOrderBook();
-        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.BUY, 50, 15800, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(6, "ABC", 17, LocalDateTime.now(), Side.BUY, 50, 15800, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
 
-        verify(eventPublisher).publish(new OrderAcceptedEvent(1, 17));
+        verify(eventPublisher).publish(new OrderAcceptedEvent(6, 17));
         verify(eventPublisher).publish(new OrderActivatedEvent(1, 11));
-        verify(eventPublisher).publish(new OrderActivatedEvent(1, 12));
+        verify(eventPublisher).publish(new OrderActivatedEvent(2, 12));
 
         Trade trade1 = new Trade(security, 15800, 200, orders.get(11), orders.get(5));
-        verify(eventPublisher).publish(new OrderExecutedEvent(1, 12, List.of(new TradeDTO(trade1))));
+        verify(eventPublisher).publish(new OrderExecutedEvent(2, 12, List.of(new TradeDTO(trade1))));
 
     }
 
     @Test
     void after_a_new_request_two_sell_stop_limit_order_triggered_and_the_second_one_executed() {
         setupOrderBook();
-        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.SELL, 2000, 15500, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(6, "ABC", 17, LocalDateTime.now(), Side.SELL, 2000, 15500, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
 
-        verify(eventPublisher).publish(new OrderAcceptedEvent(1, 17));
-        verify(eventPublisher).publish(new OrderActivatedEvent(1, 14));
-        verify(eventPublisher).publish(new OrderActivatedEvent(1, 15));
+        verify(eventPublisher).publish(new OrderAcceptedEvent(6, 17));
+        verify(eventPublisher).publish(new OrderActivatedEvent(4, 14));
+        verify(eventPublisher).publish(new OrderActivatedEvent(5, 15));
 
         Trade trade1 = new Trade(security, 15450, 85, orders.get(2), orders.get(14));
-        verify(eventPublisher).publish(new OrderExecutedEvent(1, 15, List.of(new TradeDTO(trade1))));
+        verify(eventPublisher).publish(new OrderExecutedEvent(5, 15, List.of(new TradeDTO(trade1))));
     }
 
     @Test
@@ -531,7 +531,6 @@ public class OrderHandlerTest {
         verify(eventPublisher).publish(new SecurityStateChangedEvent("ABC", MatchingState.CONTINUOUS));
         verify(eventPublisher).publish(new TradeEvent("ABC", 15650, 445, 17, 18));
         verify(eventPublisher).publish(new TradeEvent("ABC", 15650, 304, 1, 18));
-
     }
 
     @Disabled

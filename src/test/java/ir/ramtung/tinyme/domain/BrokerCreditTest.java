@@ -205,7 +205,7 @@ public class BrokerCreditTest {
     void buyer_has_not_enough_credit_for_stop_order(){
         broker3.increaseCreditBy(15300);
         Order order = new Order(1, security, Side.SELL, 304, 15650, broker1, shareholder);
-        StopLimitOrder stopLimitOrder = new StopLimitOrder(20, security, Side.BUY, 2000, 15700, broker3, shareholder, 15300);
+        StopLimitOrder stopLimitOrder = new StopLimitOrder(1, 20, security, Side.BUY, 2000, 15700, broker3, shareholder, 15300);
         MatchResult result = matcher.execute(stopLimitOrder);
         assertThat(result.outcome()).isEqualTo(MatchingOutcome.NOT_ENOUGH_CREDIT);
     }
@@ -213,7 +213,7 @@ public class BrokerCreditTest {
     @Test
     void add_and_delete_buy_stop_limit_order(){
         security.setMarketPrice(15500);
-        StopLimitOrder stopLimitOrder = new StopLimitOrder(20, security, Side.BUY, 100, 15700, broker1, shareholder, 15600);
+        StopLimitOrder stopLimitOrder = new StopLimitOrder(1, 20, security, Side.BUY, 100, 15700, broker1, shareholder, 15600);
         matcher.execute(stopLimitOrder);
         assertThat(broker1.getCredit()).isEqualTo(98_430_000L);
         try {
@@ -225,7 +225,7 @@ public class BrokerCreditTest {
     @Test
     void add_and_delete_sell_stop_limit_order(){
         security.setMarketPrice(15500);
-        StopLimitOrder stopLimitOrder = new StopLimitOrder(20, security, Side.SELL, 100, 15700, broker1, shareholder, 15400);
+        StopLimitOrder stopLimitOrder = new StopLimitOrder(1, 20, security, Side.SELL, 100, 15700, broker1, shareholder, 15400);
         matcher.execute(stopLimitOrder);
         assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
         try {
@@ -237,7 +237,7 @@ public class BrokerCreditTest {
     @Test
     void new_buy_stop_limit_order_matches_completely_with_two_sells() {
         security.setMarketPrice(15600);
-        Order order = new StopLimitOrder(11, security, Side.BUY, 500, 15830, broker2, shareholder, 15500);
+        Order order = new StopLimitOrder(1, 11, security, Side.BUY, 500, 15830, broker2, shareholder, 15500);
         MatchResult result = matcher.execute(order);
         assertThat(broker1.getCredit()).isEqualTo(107_901_500L);
         assertThat(broker2.getCredit()).isEqualTo(92_098_500L);
@@ -246,7 +246,7 @@ public class BrokerCreditTest {
     @Test
     void new_sell_stop_limit_order_matches_partially_with_two_buys() {
         security.setMarketPrice(15400);
-        Order order = new StopLimitOrder(11, security, Side.SELL, 500, 15500, broker1, shareholder, 15500);
+        Order order = new StopLimitOrder(1, 11, security, Side.SELL, 500, 15500, broker1, shareholder, 15500);
         matcher.execute(order);
         assertThat(broker1.getCredit()).isEqualTo(105_439_300L);
         assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
@@ -255,7 +255,7 @@ public class BrokerCreditTest {
     @Test
     void new_sell_stop_limit_order_cannot_activate() {
         security.setMarketPrice(15600);
-        Order order = new StopLimitOrder(11, security, Side.SELL, 500, 15830, broker2, shareholder, 15500);
+        Order order = new StopLimitOrder(1, 11, security, Side.SELL, 500, 15830, broker2, shareholder, 15500);
         MatchResult result = matcher.execute(order);
 
         assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
@@ -265,7 +265,7 @@ public class BrokerCreditTest {
     @Test
     void sell_stop_limit_order_triggered() {
         security.setMarketPrice(15600);
-        Order order = new StopLimitOrder(11, security, Side.SELL, 300, 15650, broker2, shareholder, 15500);
+        Order order = new StopLimitOrder(1, 11, security, Side.SELL, 300, 15650, broker2, shareholder, 15500);
         MatchResult result = matcher.execute(order);
         security.setMarketPrice(15500);
         orderHandler.checkNewActivation(EnterOrderRq.createUpdateOrderRq(1,"ABC", 1, LocalDateTime.now(), Side.BUY, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0, 2000));
@@ -276,7 +276,7 @@ public class BrokerCreditTest {
     @Test
     void buy_stop_limit_order_triggered() {
         security.setMarketPrice(15300);
-        Order order = new StopLimitOrder(11, security, Side.BUY, 300, 15850, broker2, shareholder, 15500);
+        Order order = new StopLimitOrder(1, 11, security, Side.BUY, 300, 15850, broker2, shareholder, 15500);
         MatchResult result = matcher.execute(order);
         security.setMarketPrice(15500);
         orderHandler.checkNewActivation(EnterOrderRq.createUpdateOrderRq(1,"ABC", 1, LocalDateTime.now(), Side.BUY, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0, 2000));

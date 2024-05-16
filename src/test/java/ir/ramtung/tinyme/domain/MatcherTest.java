@@ -187,7 +187,7 @@ public class MatcherTest {
     @Test
     void new_buy_stop_limit_order_failed_to_activate() {
         Order order = new Order(11, security, Side.SELL, 500, 15500, broker, shareholder);
-        Order stopLimitOrder = new StopLimitOrder(12, security, Side.BUY, 2000, 15700, broker, shareholder, 15600);
+        Order stopLimitOrder = new StopLimitOrder(1, 12, security, Side.BUY, 2000, 15700, broker, shareholder, 15600);
         matcher.execute(order);
         MatchResult result = matcher.execute(stopLimitOrder);
 
@@ -198,7 +198,7 @@ public class MatcherTest {
     @Test
     void new_sell_stop_limit_order_failed_to_activate() {
         Order order = new Order(11, security, Side.SELL, 500, 15500, broker, shareholder);
-        Order stopLimitOrder = new StopLimitOrder(12, security, Side.SELL, 2000, 15700, broker, shareholder, 15300);
+        Order stopLimitOrder = new StopLimitOrder(1, 12, security, Side.SELL, 2000, 15700, broker, shareholder, 15300);
         matcher.execute(order);
         MatchResult result = matcher.execute(stopLimitOrder);
 
