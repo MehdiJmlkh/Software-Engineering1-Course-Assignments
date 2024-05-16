@@ -205,6 +205,13 @@ class SecurityTest {
         assertThat(security.tradableQuantity()).isEqualTo(1435);
     }
 
-
+    @Test
+    void consider_total_quantity_of_iceberg_order_in_calculating_tradable_quantity() {
+        security.setMatchingState(MatchingState.AUCTION);
+        security.setMarketPrice(15820);
+        security.getOrderBook().enqueue(new Order(1, security, Side.BUY, 600, 15800, broker, shareholder));
+        security.getOrderBook().enqueue(new IcebergOrder(1, security, Side.SELL, 200, 15700, broker, shareholder, 50));
+        assertThat(security.tradableQuantity()).isEqualTo(550);
+    }
 
 }
