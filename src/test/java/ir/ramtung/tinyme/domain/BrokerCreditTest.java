@@ -268,7 +268,7 @@ public class BrokerCreditTest {
         Order order = new StopLimitOrder(1, 11, security, Side.SELL, 300, 15650, broker2, shareholder, 15500);
         MatchResult result = matcher.execute(order);
         security.setMarketPrice(15500);
-        orderHandler.checkNewActivation(EnterOrderRq.createUpdateOrderRq(1,"ABC", 1, LocalDateTime.now(), Side.BUY, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0, 2000));
+        orderHandler.checkNewActivation(security);
         assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
         assertThat(broker2.getCredit()).isEqualTo(104_710_000L);
     }
@@ -279,7 +279,7 @@ public class BrokerCreditTest {
         Order order = new StopLimitOrder(1, 11, security, Side.BUY, 300, 15850, broker2, shareholder, 15500);
         MatchResult result = matcher.execute(order);
         security.setMarketPrice(15500);
-        orderHandler.checkNewActivation(EnterOrderRq.createUpdateOrderRq(1,"ABC", 1, LocalDateTime.now(), Side.BUY, 2000, 15400, broker1.getBrokerId(), shareholder.getShareholderId(), 0,0, 2000));
+        orderHandler.checkNewActivation(security);
         assertThat(broker1.getCredit()).isEqualTo(104_740_000L);
         assertThat(broker2.getCredit()).isEqualTo(95_260_000L);
     }

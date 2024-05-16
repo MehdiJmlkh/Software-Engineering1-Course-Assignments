@@ -75,15 +75,14 @@ public class OrderHandler {
             if (!matchResult.trades().isEmpty()) {
                 eventPublisher.publish(new OrderExecutedEvent(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
             }
-            checkNewActivation(enterOrderRq);
+            checkNewActivation(security);
         } catch (InvalidRequestException ex) {
             eventPublisher.publish(new OrderRejectedEvent(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), ex.getReasons()));
         }
     }
 
-    public void checkNewActivation(EnterOrderRq enterOrderRq) {
+    public void checkNewActivation(Security security) {
         StopLimitOrder order;
-        Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
         while ((order = security.triggerOrder()) != null) {
 
             if (order.getSide() == Side.BUY)
