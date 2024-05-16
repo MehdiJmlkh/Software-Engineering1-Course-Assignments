@@ -125,7 +125,7 @@ public class Security {
     public int getOpeningPrice() {
         HashSet<Integer> allPrice = orderBook.allPrices();
         allPrice.add(marketPrice);
-        return allPrice.stream()
+        int openingPrice = allPrice.stream()
                 .map(price -> Arrays.asList(tradableQuantity(price),
                                             Math.abs(marketPrice - price),
                                             price))
@@ -135,6 +135,7 @@ public class Security {
                         .thenComparing(tuple -> tuple.get(2)))
                 .toList()
                 .get(0).get(2);
+        return tradableQuantity(openingPrice) == 0 ? 0 : openingPrice;
     }
 
     public int tradableQuantity(int openingPrice) {
