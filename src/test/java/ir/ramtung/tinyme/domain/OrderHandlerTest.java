@@ -571,4 +571,45 @@ public class OrderHandlerTest {
         assertThat(security.getOrderBook().getSellQueue()).isEqualTo(sellQueue);
     }
 
+    @Test
+    void changing_matching_state_to_continuous_activates_two_buy_stop_limit_orders_and_executed(){
+        setupOrderBook();
+        security.setMatchingState(MatchingState.AUCTION);
+        security.getOrderBook().enqueue(
+                new Order(17, security, Side.BUY, 445, 15800, broker1, shareholder)
+        );
+        orderHandler.handleChangeMatchingState(new ChangeMatchingStateRq(security.getIsin(), MatchingState.CONTINUOUS));
+        verify(eventPublisher).publish(new SecurityStateChangedEvent("ABC", MatchingState.CONTINUOUS));
+
+        Trade trade = new Trade(security, 15810, 200, orders.get(11), orders.get(6));
+        verify(eventPublisher).publish(new OrderExecutedEvent(2, 12, List.of(new TradeDTO(trade))));
+    }
+
+
+    @Test
+    void changing_matching_state_to_continuous_activates_three_sell_stop_limit_orders_and_executed(){
+        setupOrderBook();
+        security.setMarketPrice(15200);
+        security.setMatchingState(MatchingState.AUCTION);
+        security.getOrderBook().enqueue(
+                new Order(17, security, Side.SELL, 305, 15300, broker1, shareholder)
+        );
+        orderHandler.handleChangeMatchingState(new ChangeMatchingStateRq(security.getIsin(), MatchingState.CONTINUOUS));
+
+        verify(eventPublisher).publish(new SecurityStateChangedEvent("ABC", MatchingState.CONTINUOUS));
+        verify(eventPublisher).publish(new TradeEvent("ABC", 15300, 304, 1, 17));
+        verify(eventPublisher).publish(new TradeEvent("ABC", 15300, 1, 2, 17));
+        verify(eventPublisher).publish(new OrderActivatedEvent(4, 14));
+        verify(eventPublisher).publish(new OrderActivatedEvent(5, 15));
+        verify(eventPublisher).publish(new OrderActivatedEvent(6, 16));
+
+        Trade trade1 = new Trade(security, 15500, 42, orders.get(1), orders.get(13));
+        Trade trade2 = new Trade(security, 15450, 85, orders.get(2), orders.get(14));
+        Trade trade3 = new Trade(security, 15450, 85, orders.get(2).snapshotWithQuantity(370), orders.get(15));
+        
+        verify(eventPublisher).publish(new OrderExecutedEvent(4, 14, List.of(new TradeDTO(trade1))));
+        verify(eventPublisher).publish(new OrderExecutedEvent(5, 15, List.of(new TradeDTO(trade2))));
+        verify(eventPublisher).publish(new OrderExecutedEvent(6, 16, List.of(new TradeDTO(trade3))));
+    }
+
 }
