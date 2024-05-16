@@ -192,8 +192,11 @@ public class OrderHandler {
         List<String> errors = new LinkedList<>();
         if (deleteOrderRq.getOrderId() <= 0)
             errors.add(Message.INVALID_ORDER_ID);
-        if (securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin()) == null)
+        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
+        if (security == null)
             errors.add(Message.UNKNOWN_SECURITY_ISIN);
+        else if (security.getMatchingState() == MatchingState.AUCTION)
+            errors.add(Message.CANNOT_DELETE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE);
         if (!errors.isEmpty())
             throw new InvalidRequestException(errors);
     }
