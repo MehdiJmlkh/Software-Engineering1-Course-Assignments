@@ -606,10 +606,30 @@ public class OrderHandlerTest {
         Trade trade1 = new Trade(security, 15500, 42, orders.get(1), orders.get(13));
         Trade trade2 = new Trade(security, 15450, 85, orders.get(2), orders.get(14));
         Trade trade3 = new Trade(security, 15450, 85, orders.get(2).snapshotWithQuantity(370), orders.get(15));
-        
+
         verify(eventPublisher).publish(new OrderExecutedEvent(4, 14, List.of(new TradeDTO(trade1))));
         verify(eventPublisher).publish(new OrderExecutedEvent(5, 15, List.of(new TradeDTO(trade2))));
         verify(eventPublisher).publish(new OrderExecutedEvent(6, 16, List.of(new TradeDTO(trade3))));
+    }
+
+    @Test
+    void enter_new_sell_order_request_in_auction_state() {
+        setupOrderBook();
+        security.setMatchingState(MatchingState.AUCTION);
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.SELL, 50, 15700, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
+        eventPublisher.publish(new OpeningPriceEvent("ABC", 15700, 50));
+        assertThat(security.getOrderBook().getSellQueue().getFirst().getOrderId()).isEqualTo(17);
+        assertThat(security.getOrderBook().getSellQueue().getFirst().getQuantity()).isEqualTo(50);
+    }
+
+    @Test
+    void enter_new_buy_order_request_in_auction_state() {
+        setupOrderBook();
+        security.setMatchingState(MatchingState.AUCTION);
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.BUY, 50, 15800, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
+        eventPublisher.publish(new OpeningPriceEvent("ABC", 15800, 50));
+        assertThat(security.getOrderBook().getBuyQueue().getFirst().getOrderId()).isEqualTo(17);
+        assertThat(security.getOrderBook().getBuyQueue().getFirst().getQuantity()).isEqualTo(50);
     }
 
 }
