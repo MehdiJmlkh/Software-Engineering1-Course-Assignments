@@ -113,6 +113,7 @@ public class Matcher {
     }
 
     public List<Trade> openMarket(Security security) {
+        int openingPrice = security.getOpeningPrice();
         List<Trade> trades = new ArrayList<>();
         Order lastOrder = null;
         while (true) {
@@ -124,7 +125,7 @@ public class Matcher {
                 break;
             }
             lastOrder = order.snapshot();
-            MatchResult result = execute(order, security.getOpeningPrice());
+            MatchResult result = execute(order, openingPrice);
             if (!lastOrder.equalIdandQuantity(result.remainder()))
                 trades.addAll(result.trades());
         }
