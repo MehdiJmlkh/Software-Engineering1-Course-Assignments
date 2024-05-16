@@ -533,29 +533,20 @@ public class OrderHandlerTest {
         verify(eventPublisher).publish(new TradeEvent("ABC", 15650, 304, 1, 18));
     }
 
-    @Disabled
     @Test
-    void changing_matching_state_triggers_stop_limit_order(){
+    void changing_matching_state_to_auction_activates_two_buy_stop_limit_orders_but_not_executed(){
+        setupOrderBook();
         security.setMatchingState(MatchingState.AUCTION);
-        security.setMarketPrice(13000);
-        orders = Arrays.asList(
-                new Order(1, security, Side.BUY, 304, 15700, broker1, shareholder),
-                new Order(2, security, Side.BUY, 43, 15500, broker1, shareholder),
-                new Order(4, security, Side.BUY, 526, 15450, broker1, shareholder),
-                new Order(5, security, Side.BUY, 1000, 15400, broker1, shareholder),
-                new Order(6, security, Side.SELL, 500, 15660, broker1, shareholder),
-                new Order(7, security, Side.SELL, 30, 15800, broker1, shareholder)
+        security.getOrderBook().enqueue(
+                new Order(17, security, Side.BUY, 445, 15800, broker1, shareholder)
         );
-        orders.forEach(order -> security.getOrderBook().enqueue(order));
-        orderHandler.handleChangeMatchingState(new ChangeMatchingStateRq(security.getIsin(), MatchingState.CONTINUOUS));
-        assertThat(security.getMarketPrice()).isEqualTo(15660);
-        assertThat(security.getOpeningPrice()).isEqualTo(15660);
-//        Trade trade = new Trade(security, 15700, 304, orders.get(0), orders.get(4));
-//        assertThat(security.getMarketPrice()).isEqualTo(15700);
-//        verify(eventPublisher).publish(new SecurityStateChangedEvent(security.getIsin(), MatchingState.CONTINUOUS));
-//        verify(eventPublisher).publish(new TradeEvent(security.getIsin(), trade.getPrice(), trade.getQuantity(),
-//                trade.getBuy().getOrderId(), trade.getSell().getOrderId()));
-//        verify(eventPublisher).publish(new OrderActivatedEvent(1, 8));
+        orderHandler.handleChangeMatchingState(new ChangeMatchingStateRq(security.getIsin(), MatchingState.AUCTION));
+        verify(eventPublisher).publish(new SecurityStateChangedEvent("ABC", MatchingState.AUCTION));
+        verify(eventPublisher).publish(new TradeEvent("ABC", 15800, 350, 17, 6));
+        verify(eventPublisher).publish(new OrderActivatedEvent(1, 11));
+        verify(eventPublisher).publish(new OrderActivatedEvent(2, 12));
+        assertThat(security.getOrderBook().getBuyQueue().getFirst()).isEqualTo(orders.get(11));
+        assertThat(security.getOrderBook().getBuyQueue().get(2)).isEqualTo(orders.get(10));
     }
 
 }
