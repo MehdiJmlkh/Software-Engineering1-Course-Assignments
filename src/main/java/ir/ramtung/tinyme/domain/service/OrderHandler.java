@@ -124,8 +124,7 @@ public class OrderHandler {
                         trade.getPrice(), trade.getQuantity(), trade.getBuy().getOrderId(), trade.getSell().getOrderId()));
             }
             checkNewActivation(security);
-        } catch (InvalidRequestException ex) {
-//            TODO
+        } catch (InvalidRequestException ignored) {
         }
     }
 
