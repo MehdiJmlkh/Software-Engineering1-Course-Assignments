@@ -82,18 +82,18 @@ public class OrderHandler {
     }
 
     public void checkNewActivation(EnterOrderRq enterOrderRq) {
-        Order order;
+        StopLimitOrder order;
         Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
         while ((order = security.triggerOrder()) != null) {
 
             if (order.getSide() == Side.BUY)
                 order.getBroker().increaseCreditBy(order.getValue());
 
-            MatchResult matchResult = matcher.execute(order);
+            MatchResult matchResult = matcher.execute(order.activate());
 
-            eventPublisher.publish(new OrderActivatedEvent(enterOrderRq.getRequestId(), order.getOrderId()));
+            eventPublisher.publish(new OrderActivatedEvent(order.getRequestId(), order.getOrderId()));
             if (!matchResult.trades().isEmpty()) {
-                eventPublisher.publish(new OrderExecutedEvent(enterOrderRq.getRequestId(), order.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
+                eventPublisher.publish(new OrderExecutedEvent(order.getRequestId(), order.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
             }
         }
     }
