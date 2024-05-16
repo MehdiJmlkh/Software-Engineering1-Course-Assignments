@@ -85,14 +85,18 @@ public class OrderHandler {
         StopLimitOrder order;
         while ((order = security.triggerOrder()) != null) {
 
-            if (order.getSide() == Side.BUY)
-                order.getBroker().increaseCreditBy(order.getValue());
-
-            MatchResult matchResult = matcher.execute(order.activate());
-
             eventPublisher.publish(new OrderActivatedEvent(order.getRequestId(), order.getOrderId()));
-            if (!matchResult.trades().isEmpty()) {
-                eventPublisher.publish(new OrderExecutedEvent(order.getRequestId(), order.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
+
+            if (security.getMatchingState() == MatchingState.AUCTION)
+                security.getOrderBook().enqueue(order.activate());
+            else {
+                if (order.getSide() == Side.BUY)
+                    order.getBroker().increaseCreditBy(order.getValue());
+
+                MatchResult matchResult = matcher.execute(order.activate());
+                if (!matchResult.trades().isEmpty()) {
+                    eventPublisher.publish(new OrderExecutedEvent(order.getRequestId(), order.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
+                }
             }
         }
     }
@@ -119,6 +123,7 @@ public class OrderHandler {
                 eventPublisher.publish(new TradeEvent(changeMatchingStateRq.getSecurityIsin(),
                         trade.getPrice(), trade.getQuantity(), trade.getBuy().getOrderId(), trade.getSell().getOrderId()));
             }
+            checkNewActivation(security);
         } catch (InvalidRequestException ex) {
 //            TODO
         }
