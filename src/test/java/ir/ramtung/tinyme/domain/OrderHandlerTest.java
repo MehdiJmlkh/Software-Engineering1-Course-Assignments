@@ -663,4 +663,20 @@ public class OrderHandlerTest {
         orderHandler.handleDeleteOrder(new DeleteOrderRq(7, "ABC", Side.BUY, 11));
         eventPublisher.publish(new OrderRejectedEvent(1, 17, List.of(Message.CANNOT_DELETE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE)));
     }
+
+    @Test
+    void update_order_request_in_the_auction_state() {
+        setupOrderBook();
+        security.setMatchingState(MatchingState.AUCTION);
+        orderHandler.handleEnterOrder(EnterOrderRq.createUpdateOrderRq(7, "ABC", 2, LocalDateTime.now(), Side.BUY, 100, 15800, broker1.getBrokerId(), shareholder.getShareholderId(), 0));
+        eventPublisher.publish(new OpeningPriceEvent("ABC", 15800, 100));
+    }
+
+    @Test
+    void delete_order_request_in_the_auction_state() {
+        setupOrderBook();
+        security.setMatchingState(MatchingState.AUCTION);
+        orderHandler.handleDeleteOrder(new DeleteOrderRq(7, "ABC", Side.BUY, 2));
+        eventPublisher.publish(new OpeningPriceEvent("ABC", 0, 0));
+    }
 }
