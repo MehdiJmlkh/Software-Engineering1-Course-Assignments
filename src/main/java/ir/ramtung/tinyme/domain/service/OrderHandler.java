@@ -174,7 +174,7 @@ public class OrderHandler {
                 if (enterOrderRq.getMinimumExecutionQuantity() > 0)
                     errors.add(Message.CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_IN_THE_AUCTION_STATE);
                 if (enterOrderRq.getStopPrice() != 0)
-                    errors.add(Message.CANNOT_SUBMIT_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE);
+                    errors.add(Message.CANNOT_SUBMIT_OR_UPDATE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE);
             }
 
         }
