@@ -179,9 +179,9 @@ class SecurityTest {
     }
 
     @Test
-    void opening_price_is_equal_to_market_price_when_no_order_can_match(){
+    void opening_price_is_equal_to_zero_when_no_order_can_match(){
         security.setMarketPrice(15650);
-        assertThat(security.getOpeningPrice()).isEqualTo(15650);
+        assertThat(security.getOpeningPrice()).isEqualTo(0);
     }
 
     @Test
