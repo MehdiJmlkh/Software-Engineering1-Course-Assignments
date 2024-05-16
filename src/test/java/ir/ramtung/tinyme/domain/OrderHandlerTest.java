@@ -517,6 +517,23 @@ public class OrderHandlerTest {
         verify(eventPublisher).publish(new SecurityStateChangedEvent("ABC", MatchingState.CONTINUOUS));
     }
 
+    @Test
+    void change_matching_state_causes_trades() {
+        setupOrderBook();
+        security.setMatchingState(MatchingState.AUCTION);
+        List<Order> tradableOrders = Arrays.asList(
+                new Order(17, security, Side.BUY, 445, 15950, broker1, shareholder),
+                new Order(18, security, Side.SELL, 1000, 15650, broker1, shareholder)
+        );
+        tradableOrders.forEach(order -> security.getOrderBook().enqueue(order));
+        orderHandler.handleChangeMatchingState(new ChangeMatchingStateRq("ABC", MatchingState.CONTINUOUS));
+
+        verify(eventPublisher).publish(new SecurityStateChangedEvent("ABC", MatchingState.CONTINUOUS));
+        verify(eventPublisher).publish(new TradeEvent("ABC", 15650, 445, 17, 18));
+        verify(eventPublisher).publish(new TradeEvent("ABC", 15650, 304, 1, 18));
+
+    }
+
     @Disabled
     @Test
     void changing_matching_state_triggers_stop_limit_order(){
