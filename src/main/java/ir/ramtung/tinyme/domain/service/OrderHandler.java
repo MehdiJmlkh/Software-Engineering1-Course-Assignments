@@ -118,11 +118,11 @@ public class OrderHandler {
             Security security = securityRepository.findSecurityByIsin(changeMatchingStateRq.getSecurityIsin());
             List<Trade> trades = security.changeMatchingState(changeMatchingStateRq, matcher);
 
-            eventPublisher.publish(new SecurityStateChangedEvent(changeMatchingStateRq.getSecurityIsin(), changeMatchingStateRq.getTargetState()));
             for (Trade trade : trades) {
                 eventPublisher.publish(new TradeEvent(changeMatchingStateRq.getSecurityIsin(),
                         trade.getPrice(), trade.getQuantity(), trade.getBuy().getOrderId(), trade.getSell().getOrderId()));
             }
+            eventPublisher.publish(new SecurityStateChangedEvent(changeMatchingStateRq.getSecurityIsin(), changeMatchingStateRq.getTargetState()));
             checkNewActivation(security);
         } catch (InvalidRequestException ignored) {
         }
