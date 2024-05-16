@@ -41,7 +41,7 @@ public class Security {
                         enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
                         enterOrderRq.getEntryTime(), enterOrderRq.getMinimumExecutionQuantity());
             else
-                order = new StopLimitOrder(enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
+                order = new StopLimitOrder(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
                         enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
                         enterOrderRq.getEntryTime(), enterOrderRq.getStopPrice());
         else
@@ -145,13 +145,14 @@ public class Security {
         return tradableQuantity(getOpeningPrice());
     }
 
-    public Order triggerOrder() {
+    public StopLimitOrder triggerOrder() {
         var stopLimitOrder = getOrderBook().activateFirst(Side.BUY, getMarketPrice());
         if (stopLimitOrder == null)
             stopLimitOrder = getOrderBook().activateFirst(Side.SELL, getMarketPrice());
+
         if (stopLimitOrder == null)
             return null;
-        return stopLimitOrder.activate();
+        return stopLimitOrder;
     }
 
     public void updateMarketPrice(MatchResult matchResult) {
