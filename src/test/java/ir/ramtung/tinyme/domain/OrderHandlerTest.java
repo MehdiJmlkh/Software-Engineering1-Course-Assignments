@@ -26,6 +26,7 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -547,6 +548,27 @@ public class OrderHandlerTest {
         verify(eventPublisher).publish(new OrderActivatedEvent(2, 12));
         assertThat(security.getOrderBook().getBuyQueue().getFirst()).isEqualTo(orders.get(11));
         assertThat(security.getOrderBook().getBuyQueue().get(2)).isEqualTo(orders.get(10));
+    }
+
+    @Test
+    void changing_matching_state_to_auction_activates_three_sell_stop_limit_orders_but_not_executed(){
+        setupOrderBook();
+        security.setMarketPrice(15200);
+        security.setMatchingState(MatchingState.AUCTION);
+        security.getOrderBook().enqueue(
+                new Order(17, security, Side.SELL, 305, 15300, broker1, shareholder)
+        );
+        orderHandler.handleChangeMatchingState(new ChangeMatchingStateRq(security.getIsin(), MatchingState.AUCTION));
+
+        LinkedList<Order> sellQueue = new LinkedList<>(List.of(orders.get(15), orders.get(14), orders.get(13)));
+        sellQueue.addAll(orders.subList(5, 10));
+
+        verify(eventPublisher).publish(new TradeEvent("ABC", 15300, 304, 1, 17));
+        verify(eventPublisher).publish(new TradeEvent("ABC", 15300, 1, 2, 17));
+        verify(eventPublisher).publish(new OrderActivatedEvent(4, 14));
+        verify(eventPublisher).publish(new OrderActivatedEvent(5, 15));
+        verify(eventPublisher).publish(new OrderActivatedEvent(6, 16));
+        assertThat(security.getOrderBook().getSellQueue()).isEqualTo(sellQueue);
     }
 
 }
