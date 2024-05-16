@@ -632,4 +632,19 @@ public class OrderHandlerTest {
         assertThat(security.getOrderBook().getBuyQueue().getFirst().getQuantity()).isEqualTo(50);
     }
 
+    @Test
+    void enter_new_stop_limit_order_request_in_auction_state_is_rejected() {
+        setupOrderBook();
+        security.setMatchingState(MatchingState.AUCTION);
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.BUY, 50, 15800, broker1.getBrokerId(), shareholder.getShareholderId(), 0, 0, 15500));
+        eventPublisher.publish(new OrderRejectedEvent(1, 17, List.of(Message.CANNOT_SUBMIT_OR_UPDATE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE)));
+    }
+
+    @Test
+    void update_stop_limit_order_request_in_auction_state_is_rejected() {
+        setupOrderBook();
+        security.setMatchingState(MatchingState.AUCTION);
+        orderHandler.handleEnterOrder(EnterOrderRq.createUpdateOrderRq(1, "ABC", 14, LocalDateTime.now(), Side.BUY, 320, 15500, broker1.getBrokerId(), shareholder.getShareholderId(), 0, 0, 15500));
+        eventPublisher.publish(new OrderRejectedEvent(1, 14, List.of(Message.CANNOT_SUBMIT_OR_UPDATE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE)));
+    }
 }
