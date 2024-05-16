@@ -647,4 +647,12 @@ public class OrderHandlerTest {
         orderHandler.handleEnterOrder(EnterOrderRq.createUpdateOrderRq(1, "ABC", 14, LocalDateTime.now(), Side.BUY, 320, 15500, broker1.getBrokerId(), shareholder.getShareholderId(), 0, 0, 15500));
         eventPublisher.publish(new OrderRejectedEvent(1, 14, List.of(Message.CANNOT_SUBMIT_OR_UPDATE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE)));
     }
+
+    @Test
+    void enter_new_order_request_with_minimum_execution_quantity_in_auction_state() {
+        setupOrderBook();
+        security.setMatchingState(MatchingState.AUCTION);
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1, "ABC", 17, LocalDateTime.now(), Side.BUY, 50, 15800, broker1.getBrokerId(), shareholder.getShareholderId(), 0, 100));
+        eventPublisher.publish(new OrderRejectedEvent(1, 17, List.of(Message.CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_IN_THE_AUCTION_STATE)));
+    }
 }
