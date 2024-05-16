@@ -12,6 +12,7 @@ import ir.ramtung.tinyme.repository.SecurityRepository;
 import ir.ramtung.tinyme.repository.ShareholderRepository;
 import org.springframework.stereotype.Service;
 
+import java.nio.channels.SeekableByteChannel;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -82,22 +83,36 @@ public class OrderHandler {
     }
 
     public void checkNewActivation(Security security) {
+        List<StopLimitOrder> activatedOrders = activateOrders(security);
+        if (security.getMatchingState() == MatchingState.CONTINUOUS)
+            executeActivatedOrders(security, activatedOrders);
+    }
+
+    private List<StopLimitOrder> activateOrders(Security security) {
+        List<StopLimitOrder> activatedOrders = new LinkedList<>();
         StopLimitOrder order;
         while ((order = security.triggerOrder()) != null) {
-
-            eventPublisher.publish(new OrderActivatedEvent(order.getRequestId(), order.getOrderId()));
-
             if (security.getMatchingState() == MatchingState.AUCTION)
                 security.getOrderBook().enqueue(order.activate());
-            else {
-                if (order.getSide() == Side.BUY)
-                    order.getBroker().increaseCreditBy(order.getValue());
+            else if (order.getSide() == Side.BUY)
+                order.getBroker().increaseCreditBy(order.getValue());
+            activatedOrders.add(order);
+            eventPublisher.publish(new OrderActivatedEvent(order.getRequestId(), order.getOrderId()));
+        }
+        return activatedOrders;
+    }
 
+    private void executeActivatedOrders(Security security, List<StopLimitOrder> activatedOrders) {
+        List<StopLimitOrder> nextActivatedOrders = new LinkedList<>();
+        while (!activatedOrders.isEmpty()) {
+            for (StopLimitOrder order : activatedOrders) {
                 MatchResult matchResult = matcher.execute(order.activate());
                 if (!matchResult.trades().isEmpty()) {
                     eventPublisher.publish(new OrderExecutedEvent(order.getRequestId(), order.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
                 }
+                nextActivatedOrders.addAll(activateOrders(security));
             }
+            activatedOrders = nextActivatedOrders;
         }
     }
 
