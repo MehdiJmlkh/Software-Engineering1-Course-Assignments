@@ -126,6 +126,7 @@ public class Matcher {
                 break;
             }
             lastOrder = order.snapshot();
+            order.getBroker().increaseCreditBy(order.getValue());
             MatchResult result = execute(order, openingPrice);
             if (!lastOrder.equalIdandQuantity(result.remainder()))
                 trades.addAll(result.trades());

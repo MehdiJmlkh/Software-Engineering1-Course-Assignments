@@ -296,4 +296,14 @@ public class BrokerCreditTest {
         assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
     }
 
+    @Test
+    void open_market_returns_back_extra_credit() {
+        security.setMatchingState(MatchingState.AUCTION);
+        security.setMarketPrice(15700);
+        security.newOrder(EnterOrderRq.createNewOrderRq(1, security.getIsin(), 11, LocalDateTime.now(), Side.BUY, 400, 15805, broker2.getBrokerId(), shareholder.getShareholderId(), 0), broker2, shareholder, matcher);
+        assertThat(broker2.getCredit()).isEqualTo(93_678_000L);
+        matcher.openMarket(security);
+        assertThat(broker2.getCredit()).isEqualTo(93_679_750L);
+    }
+
 }
