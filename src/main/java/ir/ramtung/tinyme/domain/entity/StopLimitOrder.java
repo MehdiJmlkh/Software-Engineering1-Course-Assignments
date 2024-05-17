@@ -2,11 +2,13 @@ package ir.ramtung.tinyme.domain.entity;
 
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
 public class StopLimitOrder extends Order{
+    @Setter
     private long requestId;
     protected int stopPrice;
 

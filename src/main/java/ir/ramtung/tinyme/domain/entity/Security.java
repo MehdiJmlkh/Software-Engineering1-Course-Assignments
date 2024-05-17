@@ -78,6 +78,8 @@ public class Security {
         if (!(order instanceof StopLimitOrder) && updateOrderRq.getStopPrice() > 0)
             throw new InvalidRequestException(Message.CANNOT_SPECIFY_STOP_PRICE_FOR_A_ACTIVATED_ORDER);
 
+        if (order instanceof StopLimitOrder stopLimitOrder)
+            stopLimitOrder.setRequestId(updateOrderRq.getRequestId());
         if (order.getMinimumExecutionQuantity() != updateOrderRq.getMinimumExecutionQuantity())
             return MatchResult.notEqualMinimumExecutionQuantity();
 
