@@ -89,4 +89,13 @@ public class IcebergOrder extends Order {
         }
         peakSize = updateOrderRq.getPeakSize();
     }
+
+    @Override
+    public void makeQuantityZero() {
+        if (status == OrderStatus.NEW) {
+            super.makeQuantityZero();
+            return;
+        }
+        decreaseQuantity(displayedQuantity);
+    }
 }
