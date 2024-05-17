@@ -213,5 +213,4 @@ class SecurityTest {
         security.getOrderBook().enqueue(new IcebergOrder(1, security, Side.SELL, 200, 15700, broker, shareholder, 50));
         assertThat(security.tradableQuantity()).isEqualTo(550);
     }
-
 }

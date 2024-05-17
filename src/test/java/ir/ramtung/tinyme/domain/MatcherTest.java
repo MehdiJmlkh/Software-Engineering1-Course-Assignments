@@ -251,4 +251,42 @@ public class MatcherTest {
         assertThat(security.getOrderBook().getSellQueue().getFirst()).isEqualTo(order);
     }
 
+
+    @Test
+    void  open_market_with_two_iceberg_order_in_buy_queue() {
+        security.setMarketPrice(15700);
+        tradableOrders = List.of(
+                new IcebergOrder(11, security, Side.BUY, 300, 15810, broker, shareholder, 100),
+                new IcebergOrder(12, security, Side.BUY, 400, 15810, broker, shareholder, 100)
+
+        );
+        tradableOrders.forEach(order -> security.getOrderBook().enqueue(order));
+        List<Trade> trades = List.of(
+                new Trade(security, 15810, 100, tradableOrders.get(0), orders.get(5).snapshotWithQuantity(350)),
+                new Trade(security, 15810, 100, tradableOrders.get(1), orders.get(5).snapshotWithQuantity(250)),
+                new Trade(security, 15810, 100, tradableOrders.get(0), orders.get(5).snapshotWithQuantity(150)),
+                new Trade(security, 15810, 50, tradableOrders.get(1), orders.get(5).snapshotWithQuantity(50)),
+                new Trade(security, 15810, 50, tradableOrders.get(1), orders.get(6).snapshotWithQuantity(285)),
+                new Trade(security, 15810, 100, tradableOrders.get(0), orders.get(6).snapshotWithQuantity(235)),
+                new Trade(security, 15810, 100, tradableOrders.get(1), orders.get(6).snapshotWithQuantity(135)),
+                new Trade(security, 15810, 35, tradableOrders.get(1), orders.get(6).snapshotWithQuantity(35)),
+                new Trade(security, 15810, 65, tradableOrders.get(1).snapshotWithQuantity(65), orders.get(7).snapshotWithQuantity(800))
+        );
+        assertThat(matcher.openMarket(security)).isEqualTo(trades);
+    }
+
+    @Test
+    void  open_market_with_an_iceberg_order_in_sell_queue() {
+        security.setMarketPrice(15700);
+        IcebergOrder icebergOrder = new IcebergOrder(11, security, Side.SELL, 400, 15700, broker, shareholder, 100);
+        security.getOrderBook().enqueue(icebergOrder);
+        List<Trade> trades = List.of(
+                new Trade(security, 15700, 100, icebergOrder, orders.get(0).snapshotWithQuantity(304)),
+                new Trade(security, 15700, 100, icebergOrder, orders.get(0).snapshotWithQuantity(204)),
+                new Trade(security, 15700, 100, icebergOrder, orders.get(0).snapshotWithQuantity(104)),
+                new Trade(security, 15700, 4, icebergOrder, orders.get(0).snapshotWithQuantity(4))
+        );
+        assertThat(matcher.openMarket(security)).isEqualTo(trades);
+        assertThat(security.getOrderBook().getSellQueue().getFirst()).isEqualTo(icebergOrder);
+    }
 }
