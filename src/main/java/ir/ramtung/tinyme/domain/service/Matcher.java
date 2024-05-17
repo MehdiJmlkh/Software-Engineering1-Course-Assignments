@@ -13,7 +13,6 @@ public class Matcher {
     public MatchResult match(Order newOrder, int openingPrice) {
         OrderBook orderBook = newOrder.getSecurity().getOrderBook();
         LinkedList<Trade> trades = new LinkedList<>();
-
         while (orderBook.hasOrderOfType(newOrder.getSide().opposite()) && newOrder.getQuantity() > 0) {
             Order matchingOrder = orderBook.matchWithFirst(newOrder);
             if (matchingOrder == null)
@@ -45,6 +44,8 @@ public class Matcher {
                 newOrder.makeQuantityZero();
             }
         }
+        if (newOrder instanceof IcebergOrder icebergOrder && newOrder.getStatus() != OrderStatus.NEW && newOrder.getQuantity() == 0)
+            icebergOrder.replenish();
         return MatchResult.executed(newOrder, trades);
     }
 
