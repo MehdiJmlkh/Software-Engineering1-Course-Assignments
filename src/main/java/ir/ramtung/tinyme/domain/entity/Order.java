@@ -1,10 +1,7 @@
 package ir.ramtung.tinyme.domain.entity;
 
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.http.server.DelegatingServerHttpResponse;
 
 import java.time.LocalDateTime;
@@ -25,6 +22,7 @@ public class Order {
     protected Shareholder shareholder;
     @Builder.Default
     protected LocalDateTime entryTime = LocalDateTime.now();
+    @Setter
     @Builder.Default
     protected OrderStatus status = OrderStatus.NEW;
     protected int minimumExecutionQuantity = 0;
@@ -132,6 +130,6 @@ public class Order {
     public boolean equalIdandQuantity(Order other) {
         if (other == null)
             return false;
-        return orderId == other.getOrderId() && quantity == other.getQuantity();
+        return orderId == other.getOrderId() && getTotalQuantity() == other.getTotalQuantity();
     }
 }
