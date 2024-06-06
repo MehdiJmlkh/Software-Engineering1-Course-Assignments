@@ -2,6 +2,7 @@ package ir.ramtung.tinyme.domain.service;
 
 import ir.ramtung.tinyme.domain.entity.*;
 import ir.ramtung.tinyme.domain.entity.MatchingOutcome;
+import ir.ramtung.tinyme.domain.service.control.MatchingControlList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -61,7 +62,6 @@ public class Matcher {
     }
 
     private void rollbackTrades(Order newOrder, LinkedList<Trade> trades) {
-
         ListIterator<Trade> it = trades.listIterator(trades.size());
         while (it.hasPrevious()) {
             if (newOrder.getSide() == Side.BUY)
@@ -72,8 +72,6 @@ public class Matcher {
     }
 
     public MatchResult execute(Order order, int openingPrice) {
-
-        Order orderSnapshot = order.snapshot();
         if (order instanceof StopLimitOrder stopLimitOrder) {
             if (order.getSide() == Side.BUY && !order.getBroker().hasEnoughCredit(order.getValue()))
                 return MatchResult.notEnoughCredit();
