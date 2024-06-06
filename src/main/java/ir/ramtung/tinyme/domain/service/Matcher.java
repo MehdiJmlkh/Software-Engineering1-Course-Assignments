@@ -1,6 +1,7 @@
 package ir.ramtung.tinyme.domain.service;
 
 import ir.ramtung.tinyme.domain.entity.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.ListIterator;
 
 @Service
 public class Matcher {
+    CreditHandler creditHandler = new CreditHandler();
     public MatchResult match(Order newOrder, int openingPrice) {
         OrderBook orderBook = newOrder.getSecurity().getOrderBook();
         LinkedList<Trade> trades = new LinkedList<>();
@@ -19,17 +21,11 @@ public class Matcher {
                 break;
             int price = openingPrice == 0 ? matchingOrder.getPrice() : openingPrice;
             Trade trade = new Trade(newOrder.getSecurity(), price, Math.min(newOrder.getQuantity(), matchingOrder.getQuantity()), newOrder, matchingOrder);
-            if (newOrder.getSide() == Side.BUY) {
-                if (trade.buyerHasEnoughCredit())
-                    trade.decreaseBuyersCredit();
-                else {
-                    rollbackTrades(newOrder, trades);
-                    return MatchResult.notEnoughCredit();
-                }
+            if(creditHandler.handleTradeCredit(newOrder, trade) == CreditOutCome.NOT_ENOUGH) {
+                rollbackTrades(newOrder, trades);
+                return MatchResult.notEnoughCredit();
             }
-            trade.increaseSellersCredit();
             trades.add(trade);
-
             if (newOrder.getQuantity() >= matchingOrder.getQuantity()) {
                 newOrder.decreaseQuantity(matchingOrder.getQuantity());
                 orderBook.removeFirst(matchingOrder.getSide());
