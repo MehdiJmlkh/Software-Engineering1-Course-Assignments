@@ -72,9 +72,11 @@ public class Matcher {
     }
 
     public MatchResult execute(Order order, int openingPrice) {
+        MatchingOutcome outcome = controls.canStartMatching(order);
+        if (outcome != MatchingOutcome.OK)
+            return new MatchResult(outcome, order);
+
         if (order instanceof StopLimitOrder stopLimitOrder) {
-            if (order.getSide() == Side.BUY && !order.getBroker().hasEnoughCredit(order.getValue()))
-                return MatchResult.notEnoughCredit();
             if (!stopLimitOrder.isActivatable(order.getSecurity().getMarketPrice())) {
                 if (order.getSide() == Side.BUY)
                     order.getBroker().decreaseCreditBy(order.getValue());
@@ -82,10 +84,6 @@ public class Matcher {
                 return MatchResult.notActivatable();
             }
         }
-
-        MatchingOutcome outcome = controls.canStartMatching(order);
-        if (outcome != MatchingOutcome.OK)
-            return new MatchResult(outcome, order);
 
         controls.matchingStarted(order);
 

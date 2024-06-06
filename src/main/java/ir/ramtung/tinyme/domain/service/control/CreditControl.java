@@ -48,4 +48,13 @@ public class CreditControl implements MatchingControl {
         else
             newOrder.getBroker().decreaseCreditBy(trades.stream().mapToLong(Trade::getTradedValue).sum());
     }
+
+    @Override
+    public MatchingOutcome canStartMatching(Order order) {
+        if (order instanceof StopLimitOrder &&
+                order.getSide() == Side.BUY &&
+                !order.getBroker().hasEnoughCredit(order.getValue()))
+            return MatchingOutcome.NOT_ENOUGH_CREDIT;
+        return MatchingOutcome.OK;
+    }
 }
