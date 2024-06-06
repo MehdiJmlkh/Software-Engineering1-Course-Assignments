@@ -71,6 +71,11 @@ public class MatchingControlList {
         }
     }
 
+    public void marketOpenned(Order order) {
+        for (MatchingControl control : controlList)
+            control.marketOpenned(order);
+    }
+
     public void rollbackTrades(Order newOrder, LinkedList<Trade> trades) {
         for (MatchingControl control2 : controlList) {
             control2.rollbackTrades(newOrder, trades);

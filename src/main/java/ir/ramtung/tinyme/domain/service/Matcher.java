@@ -95,7 +95,6 @@ public class Matcher {
         }
 
         if (result.remainder().getQuantity() > 0) {
-
             order.getSecurity().getOrderBook().enqueue(result.remainder());
         }
 
@@ -123,7 +122,9 @@ public class Matcher {
                 break;
             }
             lastOrder = order.snapshot();
-            order.getBroker().increaseCreditBy(order.getValue());
+
+            controls.marketOpenned(order);
+
             MatchResult result = execute(order, openingPrice);
             if (!lastOrder.equalIdandQuantity(result.remainder()))
                     trades.addAll(result.trades());

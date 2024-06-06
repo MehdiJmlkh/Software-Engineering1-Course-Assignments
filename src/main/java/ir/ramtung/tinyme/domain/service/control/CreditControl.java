@@ -65,4 +65,9 @@ public class CreditControl implements MatchingControl {
                 order.getSide() == Side.BUY)
                     order.getBroker().decreaseCreditBy(order.getValue());
     }
+
+    @Override
+    public void marketOpenned(Order order) {
+        order.getBroker().increaseCreditBy(order.getValue());
+    }
 }

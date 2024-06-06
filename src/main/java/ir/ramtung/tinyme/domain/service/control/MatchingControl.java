@@ -18,4 +18,6 @@ public interface MatchingControl {
     default void tradeAccepted(Order newOrder, Trade trade) {}
 
     default void rollbackTrades(Order newOrder, LinkedList<Trade> trades) {}
+
+    default void marketOpenned(Order order){}
 }
