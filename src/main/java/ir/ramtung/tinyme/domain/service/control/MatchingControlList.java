@@ -30,6 +30,16 @@ public class MatchingControlList {
         }
     }
 
+    public MatchingOutcome canContinueMatching(Order order) {
+        for (MatchingControl control : controlList) {
+            MatchingOutcome outcome = control.canContinueMatching(order);
+            if (outcome != MatchingOutcome.OK) {
+                return outcome;
+            }
+        }
+        return MatchingOutcome.OK;
+    }
+
     public MatchingOutcome canAcceptMatching(Order order, MatchResult result) {
         for (MatchingControl control : controlList) {
             MatchingOutcome outcome = control.canAcceptMatching(order, result);

@@ -10,6 +10,7 @@ import java.util.LinkedList;
 public interface MatchingControl {
     default MatchingOutcome canStartMatching(Order order) { return MatchingOutcome.OK; }
     default void matchingStarted(Order order) {}
+    default MatchingOutcome canContinueMatching(Order order) {return MatchingOutcome.OK;}
     default MatchingOutcome canAcceptMatching(Order order, MatchResult result) { return MatchingOutcome.OK; }
     default void matchingAccepted(Order order, MatchResult result) {}
 

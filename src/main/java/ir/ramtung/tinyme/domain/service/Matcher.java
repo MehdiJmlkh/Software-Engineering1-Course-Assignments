@@ -76,16 +76,12 @@ public class Matcher {
         if (outcome != MatchingOutcome.OK)
             return new MatchResult(outcome, order);
 
-        if (order instanceof StopLimitOrder stopLimitOrder) {
-            if (!stopLimitOrder.isActivatable(order.getSecurity().getMarketPrice())) {
-                if (order.getSide() == Side.BUY)
-                    order.getBroker().decreaseCreditBy(order.getValue());
-                order.getSecurity().getOrderBook().enqueue(order);
-                return MatchResult.notActivatable();
-            }
-        }
-
         controls.matchingStarted(order);
+
+        outcome = controls.canContinueMatching(order);
+        if (outcome != MatchingOutcome.OK) {
+            return new MatchResult(outcome, order);
+        }
 
         MatchResult result = match(order, openingPrice);
         if (result.outcome() != MatchingOutcome.OK)

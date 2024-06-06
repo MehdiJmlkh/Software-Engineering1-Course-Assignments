@@ -57,4 +57,12 @@ public class CreditControl implements MatchingControl {
             return MatchingOutcome.NOT_ENOUGH_CREDIT;
         return MatchingOutcome.OK;
     }
+
+    @Override
+    public void matchingStarted(Order order) {
+        if (order instanceof StopLimitOrder stopLimitOrder &&
+                !stopLimitOrder.isActivatable(order.getSecurity().getMarketPrice()) &&
+                order.getSide() == Side.BUY)
+                    order.getBroker().decreaseCreditBy(order.getValue());
+    }
 }
