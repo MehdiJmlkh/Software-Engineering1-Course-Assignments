@@ -10,7 +10,7 @@ public final class MatchResult {
     private final LinkedList<Trade> trades;
 
     public static MatchResult executed(Order remainder, List<Trade> trades) {
-        return new MatchResult(MatchingOutcome.EXECUTED, remainder, new LinkedList<>(trades));
+        return new MatchResult(MatchingOutcome.OK, remainder, new LinkedList<>(trades));
     }
 
     public static MatchResult notActivatable() {
@@ -25,7 +25,7 @@ public final class MatchResult {
     }
 
     public static MatchResult notEnoughExecutionQuantity() {
-        return new MatchResult(MatchingOutcome.NOT_ENOUGH_EXECUTION_QUANTITY, null, new LinkedList<>());
+        return new MatchResult(MatchingOutcome.MINIMUM_QUANTITY_NOT_SATISFIED, null, new LinkedList<>());
     }
 
     public static MatchResult notEqualMinimumExecutionQuantity() {
@@ -40,6 +40,10 @@ public final class MatchResult {
         this.outcome = outcome;
         this.remainder = remainder;
         this.trades = trades;
+    }
+
+    public MatchResult(MatchingOutcome outcome, Order remainder) {
+        this(outcome, remainder, new LinkedList<>());
     }
 
     public MatchingOutcome outcome() {

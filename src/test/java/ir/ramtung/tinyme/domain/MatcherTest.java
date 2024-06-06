@@ -4,9 +4,7 @@ import ir.ramtung.tinyme.config.MockedJMSTestConfig;
 import ir.ramtung.tinyme.domain.entity.*;
 import ir.ramtung.tinyme.domain.service.Matcher;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.mockito.internal.matchers.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -157,7 +155,7 @@ public class MatcherTest {
         Order order = new Order(11, security, Side.BUY, 2000, 15800, broker, shareholder, 400);
         MatchResult result = matcher.execute(order);
 
-        assertThat(result.outcome()).isEqualTo(MatchingOutcome.NOT_ENOUGH_EXECUTION_QUANTITY);
+        assertThat(result.outcome()).isEqualTo(MatchingOutcome.MINIMUM_QUANTITY_NOT_SATISFIED);
     }
 
     @Test
@@ -165,7 +163,7 @@ public class MatcherTest {
         Order order = new Order(11, security, Side.SELL, 2000, 15700, broker, shareholder, 400);
         MatchResult result = matcher.execute(order);
 
-        assertThat(result.outcome()).isEqualTo(MatchingOutcome.NOT_ENOUGH_EXECUTION_QUANTITY);
+        assertThat(result.outcome()).isEqualTo(MatchingOutcome.MINIMUM_QUANTITY_NOT_SATISFIED);
     }
 
     @Test
@@ -173,7 +171,7 @@ public class MatcherTest {
         Order order = new Order(11, security, Side.BUY, 2000, 15800, broker, shareholder, 350);
         MatchResult result = matcher.execute(order);
 
-        assertThat(result.outcome()).isEqualTo(MatchingOutcome.EXECUTED);
+        assertThat(result.outcome()).isEqualTo(MatchingOutcome.OK);
     }
 
     @Test
@@ -181,7 +179,7 @@ public class MatcherTest {
         Order order = new Order(11, security, Side.SELL, 2000, 15700, broker, shareholder, 300);
         MatchResult result = matcher.execute(order);
 
-        assertThat(result.outcome()).isEqualTo(MatchingOutcome.EXECUTED);
+        assertThat(result.outcome()).isEqualTo(MatchingOutcome.OK);
     }
 
     @Test
