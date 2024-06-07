@@ -61,6 +61,7 @@ public class OrderHandler {
                     return;
                 case QUEUED_DURING_AUCTION_STATE:
                     eventPublisher.publish(new OpeningPriceEvent(enterOrderRq.getSecurityIsin(), security.getOpeningPrice(), security.tradableQuantity()));
+                    break;
             }
 
             if (enterOrderRq.getRequestType() == OrderEntryType.NEW_ORDER)
@@ -80,17 +81,16 @@ public class OrderHandler {
 
     public void checkNewActivation(Security security) {
         List<StopLimitOrder> activatedOrders = activateOrders(security);
-        if (security.getMatchingState() == MatchingState.CONTINUOUS)
-            executeActivatedOrders(security, activatedOrders);
+        while (!activatedOrders.isEmpty())
+            activatedOrders = executeActivatedOrders(security, activatedOrders);
+
     }
 
     private List<StopLimitOrder> activateOrders(Security security) {
         List<StopLimitOrder> activatedOrders = new LinkedList<>();
         StopLimitOrder order;
         while ((order = security.triggerOrder()) != null) {
-            if (security.getMatchingState() == MatchingState.AUCTION)
-                security.getOrderBook().enqueue(order.activate());
-            else if (order.getSide() == Side.BUY)
+            if (security.getMatchingState() == MatchingState.CONTINUOUS && order.getSide() == Side.BUY)
                 order.getBroker().increaseCreditBy(order.getValue());
             activatedOrders.add(order);
             eventPublisher.publish(new OrderActivatedEvent(order.getRequestId(), order.getOrderId()));
@@ -98,9 +98,9 @@ public class OrderHandler {
         return activatedOrders;
     }
 
-    private void executeActivatedOrders(Security security, List<StopLimitOrder> activatedOrders) {
+    private List<StopLimitOrder> executeActivatedOrders(Security security, List<StopLimitOrder> activatedOrders) {
         List<StopLimitOrder> nextActivatedOrders = new LinkedList<>();
-        while (!activatedOrders.isEmpty()) {
+        if (security.getMatchingState() == MatchingState.CONTINUOUS) {
             for (StopLimitOrder order : activatedOrders) {
                 MatchResult matchResult = matcher.execute(order.activate());
                 if (!matchResult.trades().isEmpty()) {
@@ -108,8 +108,12 @@ public class OrderHandler {
                 }
                 nextActivatedOrders.addAll(activateOrders(security));
             }
-            activatedOrders = nextActivatedOrders;
         }
+        else {
+            for (StopLimitOrder order : activatedOrders)
+                security.getOrderBook().enqueue(order.activate());
+        }
+        return nextActivatedOrders;
     }
 
     public void handleDeleteOrder(DeleteOrderRq deleteOrderRq) {
