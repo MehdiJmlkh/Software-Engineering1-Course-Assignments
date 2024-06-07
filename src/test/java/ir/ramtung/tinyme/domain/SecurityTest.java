@@ -2,10 +2,6 @@ package ir.ramtung.tinyme.domain;
 
 import ir.ramtung.tinyme.config.MockedJMSTestConfig;
 import ir.ramtung.tinyme.domain.entity.*;
-import ir.ramtung.tinyme.messaging.event.OpeningPriceEvent;
-import ir.ramtung.tinyme.messaging.exception.InvalidRequestException;
-import ir.ramtung.tinyme.messaging.request.ChangeMatchingStateRq;
-import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.domain.service.Matcher;
 import ir.ramtung.tinyme.messaging.request.MatchingState;
@@ -20,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @Import(MockedJMSTestConfig.class)
@@ -135,7 +130,6 @@ class SecurityTest {
         security.getOrderBook().enqueue(new StopLimitOrder(1, 11, security, Side.BUY, 100, 15800, broker, shareholder, 15700));
         security.updateOrder(EnterOrderRq.createUpdateOrderRq(2, security.getIsin(),11, LocalDateTime.now(), Side.BUY, 100, 15700, broker.getBrokerId(), shareholder.getShareholderId(), 0, 0, 15700), matcher);
         assertThat(((StopLimitOrder)security.getOrderBook().getStopBuyQueue().getFirst()).getRequestId()).isEqualTo(2);
-
     }
 
     @Test
