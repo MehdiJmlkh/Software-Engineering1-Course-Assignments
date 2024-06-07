@@ -1,6 +1,7 @@
 package ir.ramtung.tinyme.domain.service;
 
 import ir.ramtung.tinyme.domain.entity.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import ir.ramtung.tinyme.domain.entity.MatchingOutcome;
 import ir.ramtung.tinyme.domain.service.control.MatchingControlList;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import java.util.ListIterator;
 
 @Service
 public class Matcher {
+    CreditHandler creditHandler = new CreditHandler();
+    public MatchResult match(Order newOrder, int openingPrice) {
     @Autowired
     private MatchingControlList controls;
 
@@ -33,6 +36,9 @@ public class Matcher {
                 controls.rollbackTrades(newOrder, trades);
                 rollbackTrades(newOrder, trades);
                 return new MatchResult(outcome, newOrder);
+            if(creditHandler.handleTradeCredit(newOrder, trade) == CreditOutCome.NOT_ENOUGH) {
+                rollbackTrades(newOrder, trades);
+                return MatchResult.notEnoughCredit();
             }
 
             trades.add(trade);
@@ -62,6 +68,7 @@ public class Matcher {
     }
 
     private void rollbackTrades(Order newOrder, LinkedList<Trade> trades) {
+        creditHandler.rollBackCredits(newOrder, trades);
         ListIterator<Trade> it = trades.listIterator(trades.size());
         while (it.hasPrevious()) {
             if (newOrder.getSide() == Side.BUY)
