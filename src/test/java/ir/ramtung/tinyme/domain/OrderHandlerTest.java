@@ -686,9 +686,9 @@ public class OrderHandlerTest {
 
     @Test
     void updating_non_existing_order_fails() {
-        EnterOrderRq updateOrderRq = EnterOrderRq.createUpdateOrderRq(1, security.getIsin(), 6, LocalDateTime.now(), Side.BUY, 350, 15700, 0, 0, 0);
+        EnterOrderRq updateOrderRq = EnterOrderRq.createUpdateOrderRq(1, security.getIsin(), 6, LocalDateTime.now(), Side.BUY, 350, 15700, broker1.getBrokerId(), 0, 0);
         orderHandler.handleEnterOrder(updateOrderRq);
-        verify(eventPublisher).publish(new OrderRejectedEvent(1, 6, List.of(Message.UNKNOWN_BROKER_ID)));
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 6, List.of(Message.ORDER_ID_NOT_FOUND)));
     }
 
     @Test
