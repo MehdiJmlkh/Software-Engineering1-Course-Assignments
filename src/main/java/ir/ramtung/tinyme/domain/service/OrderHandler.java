@@ -101,9 +101,8 @@ public class OrderHandler {
         if (security.getMatchingState() == MatchingState.CONTINUOUS) {
             for (StopLimitOrder order : activatedOrders) {
                 MatchResult matchResult = matcher.execute(order.activate());
-                if (!matchResult.trades().isEmpty()) {
+                if (!matchResult.trades().isEmpty())
                     eventPublisher.publish(new OrderExecutedEvent(order.getRequestId(), order.getOrderId(), matchResult.trades().stream().map(TradeDTO::new).collect(Collectors.toList())));
-                }
                 nextActivatedOrders.addAll(activateOrders(security));
             }
         }
