@@ -2,6 +2,7 @@ package ir.ramtung.tinyme.domain.service.validation;
 
 import ir.ramtung.tinyme.domain.entity.Security;
 import ir.ramtung.tinyme.messaging.Message;
+import ir.ramtung.tinyme.messaging.request.ChangeMatchingStateRq;
 import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.repository.BrokerRepository;
@@ -34,6 +35,14 @@ public class SecurityValidation implements Validation {
         List<String> errors = new LinkedList<>();
         Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
         if (security == null)
+            errors.add(Message.UNKNOWN_SECURITY_ISIN);
+        return errors;
+    }
+
+    @Override
+    public List<String> validate(ChangeMatchingStateRq changeMatchingStateRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
+        List<String> errors = new LinkedList<>();
+        if (securityRepository.findSecurityByIsin(changeMatchingStateRq.getSecurityIsin()) == null)
             errors.add(Message.UNKNOWN_SECURITY_ISIN);
         return errors;
     }

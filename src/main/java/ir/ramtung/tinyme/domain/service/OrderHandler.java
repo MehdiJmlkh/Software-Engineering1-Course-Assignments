@@ -188,17 +188,10 @@ public class OrderHandler {
     private void validateChangeMatchingStateRq(ChangeMatchingStateRq changeMatchingStateRq) throws InvalidRequestException {
         List<String> errors = new LinkedList<>();
 
-        errors.addAll(validateSecurity(changeMatchingStateRq));
+        errors.addAll(validations.validate(changeMatchingStateRq, securityRepository, brokerRepository, shareholderRepository));
 
         if (!errors.isEmpty())
             throw new InvalidRequestException(errors);
-    }
-
-    private List<String> validateSecurity(ChangeMatchingStateRq changeMatchingStateRq) {
-        List<String> errors = new LinkedList<>();
-        if (securityRepository.findSecurityByIsin(changeMatchingStateRq.getSecurityIsin()) == null)
-            errors.add(Message.UNKNOWN_SECURITY_ISIN);
-        return errors;
     }
 
 }
