@@ -179,7 +179,7 @@ public class OrderHandler {
 
     private void validateDeleteOrderRq(DeleteOrderRq deleteOrderRq) throws InvalidRequestException {
         List<String> errors = new LinkedList<>();
-        
+
         errors.addAll(validateOrder(deleteOrderRq));
         errors.addAll(validateSecurity(deleteOrderRq));
         errors.addAll(validateStopPrice(deleteOrderRq));
@@ -190,8 +190,9 @@ public class OrderHandler {
 
     private void validateChangeMatchingStateRq(ChangeMatchingStateRq changeMatchingStateRq) throws InvalidRequestException {
         List<String> errors = new LinkedList<>();
-        if (securityRepository.findSecurityByIsin(changeMatchingStateRq.getSecurityIsin()) == null)
-            errors.add(Message.UNKNOWN_SECURITY_ISIN);
+
+        errors.addAll(validateSecurity(changeMatchingStateRq));
+        
         if (!errors.isEmpty())
             throw new InvalidRequestException(errors);
     }
@@ -214,6 +215,13 @@ public class OrderHandler {
         List<String> errors = new LinkedList<>();
         Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
         if (security == null)
+            errors.add(Message.UNKNOWN_SECURITY_ISIN);
+        return errors;
+    }
+
+    private List<String> validateSecurity(ChangeMatchingStateRq changeMatchingStateRq) {
+        List<String> errors = new LinkedList<>();
+        if (securityRepository.findSecurityByIsin(changeMatchingStateRq.getSecurityIsin()) == null)
             errors.add(Message.UNKNOWN_SECURITY_ISIN);
         return errors;
     }
