@@ -39,7 +39,7 @@ public class OrderHandler {
 
     public void handleEnterOrder(EnterOrderRq enterOrderRq) {
         try {
-            validateEnterOrderRq(enterOrderRq);
+            validations.validate(enterOrderRq, securityRepository, brokerRepository, shareholderRepository);
 
             Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
 
@@ -117,7 +117,7 @@ public class OrderHandler {
 
     public void handleDeleteOrder(DeleteOrderRq deleteOrderRq) {
         try {
-            validateDeleteOrderRq(deleteOrderRq);
+            validations.validate(deleteOrderRq, securityRepository, brokerRepository, shareholderRepository);
             Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
             Order order = security.getOrderBook().findByOrderId(deleteOrderRq.getSide(), deleteOrderRq.getOrderId());
             security.deleteOrder(order);
@@ -131,7 +131,7 @@ public class OrderHandler {
 
     public void handleChangeMatchingState(ChangeMatchingStateRq changeMatchingStateRq) {
         try {
-            validateChangeMatchingStateRq(changeMatchingStateRq);
+            validations.validate(changeMatchingStateRq, securityRepository, brokerRepository, shareholderRepository);
             Security security = securityRepository.findSecurityByIsin(changeMatchingStateRq.getSecurityIsin());
             List<Trade> trades = security.changeMatchingState(changeMatchingStateRq, matcher);
 
@@ -165,33 +165,6 @@ public class OrderHandler {
                     enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
                     enterOrderRq.getEntryTime(), enterOrderRq.getPeakSize(), enterOrderRq.getMinimumExecutionQuantity());
         return order;
-    }
-
-    private void validateEnterOrderRq(EnterOrderRq enterOrderRq) throws InvalidRequestException {
-        List<String> errors = new LinkedList<>();
-
-        errors.addAll(validations.validate(enterOrderRq, securityRepository, brokerRepository, shareholderRepository));
-
-        if (!errors.isEmpty())
-            throw new InvalidRequestException(errors);
-    }
-
-    private void validateDeleteOrderRq(DeleteOrderRq deleteOrderRq) throws InvalidRequestException {
-        List<String> errors = new LinkedList<>();
-
-        errors.addAll(validations.validate(deleteOrderRq, securityRepository, brokerRepository, shareholderRepository));
-
-        if (!errors.isEmpty())
-            throw new InvalidRequestException(errors);
-    }
-
-    private void validateChangeMatchingStateRq(ChangeMatchingStateRq changeMatchingStateRq) throws InvalidRequestException {
-        List<String> errors = new LinkedList<>();
-
-        errors.addAll(validations.validate(changeMatchingStateRq, securityRepository, brokerRepository, shareholderRepository));
-
-        if (!errors.isEmpty())
-            throw new InvalidRequestException(errors);
     }
 
 }
