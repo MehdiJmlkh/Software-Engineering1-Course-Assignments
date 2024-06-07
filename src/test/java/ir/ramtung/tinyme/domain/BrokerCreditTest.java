@@ -288,14 +288,14 @@ public class BrokerCreditTest {
     void credit_of_buyer_is_decreased_when_auction(){
         security.setMatchingState(MatchingState.AUCTION);
         Order order = new Order(11, security, Side.BUY, 5000, 1000, broker2, shareholder);
-        security.newOrder(order, broker2, shareholder, matcher);
+        security.newOrder(order, matcher);
         assertThat(broker2.getCredit()).isEqualTo(95_000_000L);
     }
     @Test
     void credit_of_seller_does_not_change_when_auction(){
         security.setMatchingState(MatchingState.AUCTION);
         Order order = new Order(11, security, Side.SELL, 5000, 1000, broker2, shareholder);
-        security.newOrder(order, broker2, shareholder, matcher);
+        security.newOrder(order, matcher);
         assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
     }
 
@@ -304,7 +304,7 @@ public class BrokerCreditTest {
         security.setMatchingState(MatchingState.AUCTION);
         security.setMarketPrice(15700);
         Order order = new Order(11, security, Side.BUY, 400, 15805, broker2, shareholder);
-        security.newOrder(order, broker2, shareholder, matcher);
+        security.newOrder(order, matcher);
         assertThat(broker2.getCredit()).isEqualTo(93_678_000L);
         matcher.openMarket(security);
         assertThat(broker2.getCredit()).isEqualTo(93_679_750L);

@@ -29,7 +29,7 @@ public class Security {
     @Builder.Default
     private MatchingState matchingState = MatchingState.CONTINUOUS;
 
-    public MatchResult newOrder(Order order, Broker broker, Shareholder shareholder, Matcher matcher) {
+    public MatchResult newOrder(Order order, Matcher matcher) {
         if (matchingState == MatchingState.AUCTION) {
             if (order.getSide() == Side.BUY)
                 order.getBroker().decreaseCreditBy(order.getValue());

@@ -42,7 +42,7 @@ public class OrderHandler {
 
             MatchResult matchResult;
             if (enterOrderRq.getRequestType() == OrderEntryType.NEW_ORDER)
-                matchResult = security.newOrder(createNewOrder(enterOrderRq), broker, shareholder, matcher);
+                matchResult = security.newOrder(createNewOrder(enterOrderRq), matcher);
             else
                 matchResult = security.updateOrder(enterOrderRq, matcher);
 
