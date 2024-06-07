@@ -137,10 +137,8 @@ class SecurityTest {
     @Test
     void update_stop_limit_order_will_change_request_id() {
         security.getOrderBook().enqueue(new StopLimitOrder(1, 11, security, Side.BUY, 100, 15800, broker, shareholder, 15700));
-        try {
-            security.updateOrder(EnterOrderRq.createUpdateOrderRq(2, security.getIsin(),11, LocalDateTime.now(), Side.BUY, 100, 15700, broker.getBrokerId(), shareholder.getShareholderId(), 0, 0, 15700), matcher);
-            assertThat(((StopLimitOrder)security.getOrderBook().getStopBuyQueue().getFirst()).getRequestId()).isEqualTo(2);
-        } catch (InvalidRequestException ignored) {}
+        security.updateOrder(EnterOrderRq.createUpdateOrderRq(2, security.getIsin(),11, LocalDateTime.now(), Side.BUY, 100, 15700, broker.getBrokerId(), shareholder.getShareholderId(), 0, 0, 15700), matcher);
+        assertThat(((StopLimitOrder)security.getOrderBook().getStopBuyQueue().getFirst()).getRequestId()).isEqualTo(2);
 
     }
 

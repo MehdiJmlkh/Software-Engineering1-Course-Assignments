@@ -40,13 +40,13 @@ public class Security {
             return matcher.execute(order);
     }
 
-    public void deleteOrder(Order order) throws InvalidRequestException {
+    public void deleteOrder(Order order) {
         if (order.getSide() == Side.BUY)
             order.getBroker().increaseCreditBy(order.getValue());
         orderBook.removeByOrderId(order.getSide(), order.getOrderId());
     }
 
-    public MatchResult updateOrder(EnterOrderRq updateOrderRq, Matcher matcher) throws InvalidRequestException {
+    public MatchResult updateOrder(EnterOrderRq updateOrderRq, Matcher matcher) {
         Order order = orderBook.findByOrderId(updateOrderRq.getSide(), updateOrderRq.getOrderId());
 
         if (order instanceof StopLimitOrder stopLimitOrder)
