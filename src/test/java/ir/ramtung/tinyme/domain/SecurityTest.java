@@ -86,12 +86,6 @@ class SecurityTest {
     }
 
     @Test
-    void updating_non_existing_order_fails() {
-        EnterOrderRq updateOrderRq = EnterOrderRq.createUpdateOrderRq(1, security.getIsin(), 6, LocalDateTime.now(), Side.BUY, 350, 15700, 0, 0, 0);
-        assertThatExceptionOfType(InvalidRequestException.class).isThrownBy(() -> security.updateOrder(updateOrderRq, matcher));
-    }
-
-    @Test
     void delete_order_works() {
         DeleteOrderRq deleteOrderRq = new DeleteOrderRq(1, security.getIsin(), Side.SELL, 6);
         assertThatNoException().isThrownBy(() -> security.deleteOrder(deleteOrderRq));

@@ -207,6 +207,18 @@ public class OrderHandler {
             errors.add(Message.INVALID_PEAK_SIZE);
         if (!errors.isEmpty())
             throw new InvalidRequestException(errors);
+
+        if (enterOrderRq.getRequestType() == OrderEntryType.UPDATE_ORDER) {
+            Order order = security.getOrderBook().findByOrderId(enterOrderRq.getSide(), enterOrderRq.getOrderId());
+            if (order == null)
+                throw new InvalidRequestException(Message.ORDER_ID_NOT_FOUND);
+            if ((order instanceof IcebergOrder) && enterOrderRq.getPeakSize() == 0)
+                throw new InvalidRequestException(Message.INVALID_PEAK_SIZE);
+            if (!(order instanceof IcebergOrder) && enterOrderRq.getPeakSize() != 0)
+                throw new InvalidRequestException(Message.CANNOT_SPECIFY_PEAK_SIZE_FOR_A_NON_ICEBERG_ORDER);
+            if (!(order instanceof StopLimitOrder) && enterOrderRq.getStopPrice() > 0)
+                throw new InvalidRequestException(Message.CANNOT_SPECIFY_STOP_PRICE_FOR_A_ACTIVATED_ORDER);
+        }
     }
 
     private void validateDeleteOrderRq(DeleteOrderRq deleteOrderRq) throws InvalidRequestException {

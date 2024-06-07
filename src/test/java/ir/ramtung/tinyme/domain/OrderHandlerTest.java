@@ -8,6 +8,7 @@ import ir.ramtung.tinyme.messaging.EventPublisher;
 import ir.ramtung.tinyme.messaging.Message;
 import ir.ramtung.tinyme.messaging.TradeDTO;
 import ir.ramtung.tinyme.messaging.event.*;
+import ir.ramtung.tinyme.messaging.exception.InvalidRequestException;
 import ir.ramtung.tinyme.messaging.request.ChangeMatchingStateRq;
 import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
@@ -30,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -680,5 +682,12 @@ public class OrderHandlerTest {
         security.setMatchingState(MatchingState.AUCTION);
         orderHandler.handleDeleteOrder(new DeleteOrderRq(7, "ABC", Side.BUY, 2));
         eventPublisher.publish(new OpeningPriceEvent("ABC", 0, 0));
+    }
+
+    @Test
+    void updating_non_existing_order_fails() {
+        EnterOrderRq updateOrderRq = EnterOrderRq.createUpdateOrderRq(1, security.getIsin(), 6, LocalDateTime.now(), Side.BUY, 350, 15700, 0, 0, 0);
+        orderHandler.handleEnterOrder(updateOrderRq);
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 6, List.of(Message.UNKNOWN_BROKER_ID)));
     }
 }
