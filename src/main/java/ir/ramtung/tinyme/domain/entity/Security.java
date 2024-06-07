@@ -52,8 +52,6 @@ public class Security {
 
         if (order instanceof StopLimitOrder stopLimitOrder)
             stopLimitOrder.setRequestId(updateOrderRq.getRequestId());
-//        if (order.getMinimumExecutionQuantity() != updateOrderRq.getMinimumExecutionQuantity())
-//            return MatchResult.notEqualMinimumExecutionQuantity();
 
         if (updateOrderRq.getSide() == Side.SELL &&
                 !order.getShareholder().hasEnoughPositionsOn(this,
