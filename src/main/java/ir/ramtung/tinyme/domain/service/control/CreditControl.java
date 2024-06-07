@@ -1,6 +1,7 @@
 package ir.ramtung.tinyme.domain.service.control;
 
 import ir.ramtung.tinyme.domain.entity.*;
+import ir.ramtung.tinyme.messaging.request.MatchingState;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
@@ -60,10 +61,12 @@ public class CreditControl implements MatchingControl {
 
     @Override
     public void matchingStarted(Order order) {
-        if (order instanceof StopLimitOrder stopLimitOrder &&
-                !stopLimitOrder.isActivatable(order.getSecurity().getMarketPrice()) &&
-                order.getSide() == Side.BUY)
-                    order.getBroker().decreaseCreditBy(order.getValue());
+        if (order.getSide() == Side.BUY) {
+            if (order instanceof StopLimitOrder stopLimitOrder && !stopLimitOrder.isActivatable(order.getSecurity().getMarketPrice()))
+                order.getBroker().decreaseCreditBy(order.getValue());
+            if (order.getSecurity().getMatchingState() == MatchingState.CONTINUOUS && order.getStatus() == OrderStatus.ACTIVATED)
+                order.getBroker().increaseCreditBy(order.getValue());
+        }
     }
 
     @Override

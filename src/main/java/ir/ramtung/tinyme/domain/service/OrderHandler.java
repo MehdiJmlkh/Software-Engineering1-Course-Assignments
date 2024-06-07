@@ -90,8 +90,6 @@ public class OrderHandler {
         List<StopLimitOrder> activatedOrders = new LinkedList<>();
         StopLimitOrder order;
         while ((order = security.triggerOrder()) != null) {
-            if (security.getMatchingState() == MatchingState.CONTINUOUS && order.getSide() == Side.BUY)
-                order.getBroker().increaseCreditBy(order.getValue());
             activatedOrders.add(order);
             eventPublisher.publish(new OrderActivatedEvent(order.getRequestId(), order.getOrderId()));
         }
