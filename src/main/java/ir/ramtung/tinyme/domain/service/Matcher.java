@@ -1,7 +1,6 @@
 package ir.ramtung.tinyme.domain.service;
 
 import ir.ramtung.tinyme.domain.entity.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -60,11 +59,10 @@ public class Matcher {
     public MatchResult execute(Order order, int openingPrice) {
         Order orderSnapshot = order.snapshot();
         if (order instanceof StopLimitOrder stopLimitOrder) {
-            if (order.getSide() == Side.BUY && !order.getBroker().hasEnoughCredit(order.getValue()))
+            StopStatus creditStatus = creditHandler.initStopLimitOrderCredit(stopLimitOrder);
+            if(creditStatus == StopStatus.NOT_ENOUGH){
                 return MatchResult.notEnoughCredit();
-            if (!stopLimitOrder.isActivatable(order.getSecurity().getMarketPrice())) {
-                if (order.getSide() == Side.BUY)
-                    order.getBroker().decreaseCreditBy(order.getValue());
+            } else if (creditStatus == StopStatus.NOT_ACTIVATABLE) {
                 order.getSecurity().getOrderBook().enqueue(order);
                 return MatchResult.notActivatable();
             }

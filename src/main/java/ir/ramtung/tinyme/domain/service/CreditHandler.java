@@ -1,10 +1,7 @@
 package ir.ramtung.tinyme.domain.service;
 
 
-import ir.ramtung.tinyme.domain.entity.CreditOutCome;
-import ir.ramtung.tinyme.domain.entity.Order;
-import ir.ramtung.tinyme.domain.entity.Side;
-import ir.ramtung.tinyme.domain.entity.Trade;
+import ir.ramtung.tinyme.domain.entity.*;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -31,5 +28,17 @@ public class CreditHandler {
         else{
             newOrder.getBroker().decreaseCreditBy(trades.stream().mapToLong(Trade::getTradedValue).sum());
         }
+    }
+
+    public StopStatus initStopLimitOrderCredit(StopLimitOrder stopLimitOrder){
+        if(stopLimitOrder.getSide() == Side.BUY &&
+        !stopLimitOrder.getBroker().hasEnoughCredit(stopLimitOrder.getValue()))
+            return StopStatus.NOT_ENOUGH;
+        if(!stopLimitOrder.isActivatable(stopLimitOrder.getSecurity().getMarketPrice())){
+            if(stopLimitOrder.getSide() == Side.BUY)
+                stopLimitOrder.getBroker().decreaseCreditBy(stopLimitOrder.getValue());
+            return StopStatus.NOT_ACTIVATABLE;
+        }
+        return StopStatus.ACTIVATABLE;
     }
 }
