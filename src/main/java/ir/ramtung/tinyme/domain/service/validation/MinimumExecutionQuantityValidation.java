@@ -26,13 +26,12 @@ public class MinimumExecutionQuantityValidation implements Validation {
 
         Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
         if (security != null) {
-            if (security.getMatchingState() == MatchingState.AUCTION)
-                if (enterOrderRq.getMinimumExecutionQuantity() > 0)
-                    errors.add(Message.CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_IN_THE_AUCTION_STATE);
+            if (security.getMatchingState() == MatchingState.AUCTION && enterOrderRq.getMinimumExecutionQuantity() > 0)
+                errors.add(Message.CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_IN_THE_AUCTION_STATE);
+
             Order order = security.getOrderBook().findByOrderId(enterOrderRq.getSide(), enterOrderRq.getOrderId());
-            if (order != null)
-                if (order.getMinimumExecutionQuantity() != enterOrderRq.getMinimumExecutionQuantity())
-                    errors.add(Message.MINIMUM_EXECUTION_QUANTITY_OF_UPDATE_ORDER_HAS_CHANGED);
+            if (order != null && order.getMinimumExecutionQuantity() != enterOrderRq.getMinimumExecutionQuantity())
+                errors.add(Message.MINIMUM_EXECUTION_QUANTITY_OF_UPDATE_ORDER_HAS_CHANGED);
         }
 
         return errors;

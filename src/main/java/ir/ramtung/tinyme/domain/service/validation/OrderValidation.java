@@ -19,6 +19,7 @@ public class OrderValidation implements Validation {
     @Override
     public List<String> validate(EnterOrderRq enterOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
         List<String> errors = new LinkedList<>();
+
         if (enterOrderRq.getOrderId() <= 0)
             errors.add(Message.INVALID_ORDER_ID);
         if (enterOrderRq.getQuantity() <= 0)
@@ -27,20 +28,18 @@ public class OrderValidation implements Validation {
             errors.add(Message.ORDER_PRICE_NOT_POSITIVE);
 
         Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
-        if (security != null) {
-            if (enterOrderRq.getRequestType() == OrderEntryType.UPDATE_ORDER) {
-                Order order = security.getOrderBook().findByOrderId(enterOrderRq.getSide(), enterOrderRq.getOrderId());
-                if (order == null)
-                    errors.add(Message.ORDER_ID_NOT_FOUND);
-            }
+        if (security != null && enterOrderRq.getRequestType() == OrderEntryType.UPDATE_ORDER) {
+            Order order = security.getOrderBook().findByOrderId(enterOrderRq.getSide(), enterOrderRq.getOrderId());
+            if (order == null)
+                errors.add(Message.ORDER_ID_NOT_FOUND);
         }
-
         return errors;
     }
 
     @Override
     public List<String> validate(DeleteOrderRq deleteOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
         List<String> errors = new LinkedList<>();
+
         if (deleteOrderRq.getOrderId() <= 0)
             errors.add(Message.INVALID_ORDER_ID);
 

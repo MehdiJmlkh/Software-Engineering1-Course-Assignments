@@ -30,12 +30,11 @@ public class StopPriceValidation implements Validation {
 
         Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
         if (security != null) {
-            if (security.getMatchingState() == MatchingState.AUCTION)
-                if (enterOrderRq.getStopPrice() != 0)
-                    errors.add(Message.CANNOT_SUBMIT_OR_UPDATE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE);
+            if (security.getMatchingState() == MatchingState.AUCTION && enterOrderRq.getStopPrice() != 0)
+                errors.add(Message.CANNOT_SUBMIT_OR_UPDATE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE);
+
             Order order = security.getOrderBook().findByOrderId(enterOrderRq.getSide(), enterOrderRq.getOrderId());
-            if (order != null)
-                if (!(order instanceof StopLimitOrder) && enterOrderRq.getStopPrice() > 0)
+            if (order != null && !(order instanceof StopLimitOrder) && enterOrderRq.getStopPrice() > 0)
                     errors.add(Message.CANNOT_SPECIFY_STOP_PRICE_FOR_A_ACTIVATED_ORDER);
         }
 
@@ -45,10 +44,11 @@ public class StopPriceValidation implements Validation {
     @Override
     public List<String> validate(DeleteOrderRq deleteOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
         List<String> errors = new LinkedList<>();
+
         Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
-        if (security != null)
-            if (security.getMatchingState() == MatchingState.AUCTION)
+        if (security != null && security.getMatchingState() == MatchingState.AUCTION)
                 errors.add(Message.CANNOT_DELETE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE);
+
         return errors;
     }
 }

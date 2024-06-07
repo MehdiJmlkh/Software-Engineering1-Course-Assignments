@@ -18,6 +18,7 @@ public class SecurityValidation implements Validation {
     @Override
     public List<String> validate(EnterOrderRq enterOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
         List<String> errors = new LinkedList<>();
+
         Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
         if (security == null)
             errors.add(Message.UNKNOWN_SECURITY_ISIN);
@@ -33,8 +34,7 @@ public class SecurityValidation implements Validation {
     @Override
     public List<String> validate(DeleteOrderRq deleteOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
         List<String> errors = new LinkedList<>();
-        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
-        if (security == null)
+        if (securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin()) == null)
             errors.add(Message.UNKNOWN_SECURITY_ISIN);
         return errors;
     }
