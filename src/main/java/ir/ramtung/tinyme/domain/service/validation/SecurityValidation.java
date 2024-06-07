@@ -2,6 +2,7 @@ package ir.ramtung.tinyme.domain.service.validation;
 
 import ir.ramtung.tinyme.domain.entity.Security;
 import ir.ramtung.tinyme.messaging.Message;
+import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.repository.BrokerRepository;
 import ir.ramtung.tinyme.repository.SecurityRepository;
@@ -25,6 +26,15 @@ public class SecurityValidation implements Validation {
             if (enterOrderRq.getPrice() % security.getTickSize() != 0)
                 errors.add(Message.PRICE_NOT_MULTIPLE_OF_TICK_SIZE);
         }
+        return errors;
+    }
+
+    @Override
+    public List<String> validate(DeleteOrderRq deleteOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
+        List<String> errors = new LinkedList<>();
+        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
+        if (security == null)
+            errors.add(Message.UNKNOWN_SECURITY_ISIN);
         return errors;
     }
 }

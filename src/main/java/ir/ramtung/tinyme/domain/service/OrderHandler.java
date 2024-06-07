@@ -179,9 +179,7 @@ public class OrderHandler {
     private void validateDeleteOrderRq(DeleteOrderRq deleteOrderRq) throws InvalidRequestException {
         List<String> errors = new LinkedList<>();
 
-        errors.addAll(validateOrder(deleteOrderRq));
-        errors.addAll(validateSecurity(deleteOrderRq));
-        errors.addAll(validateStopPrice(deleteOrderRq));
+        errors.addAll(validations.validate(deleteOrderRq, securityRepository, brokerRepository, shareholderRepository));
 
         if (!errors.isEmpty())
             throw new InvalidRequestException(errors);
@@ -196,43 +194,10 @@ public class OrderHandler {
             throw new InvalidRequestException(errors);
     }
 
-
-
-    private List<String> validateSecurity(DeleteOrderRq deleteOrderRq) {
-        List<String> errors = new LinkedList<>();
-        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
-        if (security == null)
-            errors.add(Message.UNKNOWN_SECURITY_ISIN);
-        return errors;
-    }
-
     private List<String> validateSecurity(ChangeMatchingStateRq changeMatchingStateRq) {
         List<String> errors = new LinkedList<>();
         if (securityRepository.findSecurityByIsin(changeMatchingStateRq.getSecurityIsin()) == null)
             errors.add(Message.UNKNOWN_SECURITY_ISIN);
-        return errors;
-    }
-
-    private List<String> validateOrder(DeleteOrderRq deleteOrderRq) {
-        List<String> errors = new LinkedList<>();
-        if (deleteOrderRq.getOrderId() <= 0)
-            errors.add(Message.INVALID_ORDER_ID);
-
-        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
-        if (security != null) {
-            Order order = security.getOrderBook().findByOrderId(deleteOrderRq.getSide(), deleteOrderRq.getOrderId());
-            if (order == null)
-                errors.add(Message.ORDER_ID_NOT_FOUND);
-        }
-        return errors;
-    }
-
-    private List<String> validateStopPrice(DeleteOrderRq deleteOrderRq) {
-        List<String> errors = new LinkedList<>();
-        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
-        if (security != null)
-            if (security.getMatchingState() == MatchingState.AUCTION)
-                errors.add(Message.CANNOT_DELETE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE);
         return errors;
     }
 

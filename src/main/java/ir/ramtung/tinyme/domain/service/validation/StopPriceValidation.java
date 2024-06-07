@@ -4,6 +4,7 @@ import ir.ramtung.tinyme.domain.entity.Order;
 import ir.ramtung.tinyme.domain.entity.Security;
 import ir.ramtung.tinyme.domain.entity.StopLimitOrder;
 import ir.ramtung.tinyme.messaging.Message;
+import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.messaging.request.MatchingState;
 import ir.ramtung.tinyme.repository.BrokerRepository;
@@ -38,6 +39,16 @@ public class StopPriceValidation implements Validation {
                     errors.add(Message.CANNOT_SPECIFY_STOP_PRICE_FOR_A_ACTIVATED_ORDER);
         }
 
+        return errors;
+    }
+
+    @Override
+    public List<String> validate(DeleteOrderRq deleteOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
+        List<String> errors = new LinkedList<>();
+        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
+        if (security != null)
+            if (security.getMatchingState() == MatchingState.AUCTION)
+                errors.add(Message.CANNOT_DELETE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE);
         return errors;
     }
 }

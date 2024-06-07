@@ -3,6 +3,7 @@ package ir.ramtung.tinyme.domain.service.validation;
 import ir.ramtung.tinyme.domain.entity.Order;
 import ir.ramtung.tinyme.domain.entity.Security;
 import ir.ramtung.tinyme.messaging.Message;
+import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.messaging.request.OrderEntryType;
 import ir.ramtung.tinyme.repository.BrokerRepository;
@@ -34,6 +35,21 @@ public class OrderValidation implements Validation {
             }
         }
 
+        return errors;
+    }
+
+    @Override
+    public List<String> validate(DeleteOrderRq deleteOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
+        List<String> errors = new LinkedList<>();
+        if (deleteOrderRq.getOrderId() <= 0)
+            errors.add(Message.INVALID_ORDER_ID);
+
+        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
+        if (security != null) {
+            Order order = security.getOrderBook().findByOrderId(deleteOrderRq.getSide(), deleteOrderRq.getOrderId());
+            if (order == null)
+                errors.add(Message.ORDER_ID_NOT_FOUND);
+        }
         return errors;
     }
 }

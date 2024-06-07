@@ -1,5 +1,6 @@
 package ir.ramtung.tinyme.domain.service.validation;
 
+import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.repository.BrokerRepository;
 import ir.ramtung.tinyme.repository.SecurityRepository;
@@ -15,10 +16,18 @@ public class ValidationList {
     @Autowired
     private List<Validation> validations;
 
-    public List<String> validate(EnterOrderRq enterOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
+    public List<String> validate (EnterOrderRq enterOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
         List<String> errors = new LinkedList<>();
         for (Validation validation : validations) {
             errors.addAll(validation.validate(enterOrderRq, securityRepository, brokerRepository, shareholderRepository));
+        }
+        return errors;
+    }
+
+    public List<String> validate (DeleteOrderRq deleteOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
+        List<String> errors = new LinkedList<>();
+        for (Validation validation : validations) {
+            errors.addAll(validation.validate(deleteOrderRq, securityRepository, brokerRepository, shareholderRepository));
         }
         return errors;
     }
