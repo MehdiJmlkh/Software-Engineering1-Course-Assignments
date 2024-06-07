@@ -130,9 +130,7 @@ public class OrderHandlerTest {
         Trade trade = new Trade(security, matchingBuyOrder.getPrice(), incomingSellOrder.getQuantity(),
                 matchingBuyOrder, incomingSellOrder);
 
-        EventPublisher mockEventPublisher = mock(EventPublisher.class, withSettings().verboseLogging());
-        OrderHandler myOrderHandler = new OrderHandler(securityRepository, brokerRepository, shareholderRepository, mockEventPublisher, matcher);
-        myOrderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1,
+        orderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1,
                 incomingSellOrder.getSecurity().getIsin(),
                 incomingSellOrder.getOrderId(),
                 incomingSellOrder.getEntryTime(),
@@ -140,10 +138,10 @@ public class OrderHandlerTest {
                 incomingSellOrder.getTotalQuantity(),
                 incomingSellOrder.getPrice(),
                 incomingSellOrder.getBroker().getBrokerId(),
-                incomingSellOrder.getShareholder().getShareholderId(), 100));
+                incomingSellOrder.getShareholder().getShareholderId(), 100,0));
 
-        verify(mockEventPublisher).publish(new OrderAcceptedEvent(1, 200));
-        verify(mockEventPublisher).publish(new OrderExecutedEvent(1, 200, List.of(new TradeDTO(trade))));
+        verify(eventPublisher).publish(new OrderAcceptedEvent(1, 200));
+        verify(eventPublisher).publish(new OrderExecutedEvent(1, 200, List.of(new TradeDTO(trade))));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package ir.ramtung.tinyme.domain.service;
 
 import ir.ramtung.tinyme.domain.entity.*;
+import ir.ramtung.tinyme.domain.service.validation.ValidationList;
 import ir.ramtung.tinyme.messaging.Message;
 import ir.ramtung.tinyme.messaging.exception.InvalidRequestException;
 import ir.ramtung.tinyme.messaging.EventPublisher;
@@ -10,6 +11,7 @@ import ir.ramtung.tinyme.messaging.request.*;
 import ir.ramtung.tinyme.repository.BrokerRepository;
 import ir.ramtung.tinyme.repository.SecurityRepository;
 import ir.ramtung.tinyme.repository.ShareholderRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -23,6 +25,9 @@ public class OrderHandler {
     ShareholderRepository shareholderRepository;
     EventPublisher eventPublisher;
     Matcher matcher;
+
+    @Autowired
+    private ValidationList validations;
 
     public OrderHandler(SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository, EventPublisher eventPublisher, Matcher matcher) {
         this.securityRepository = securityRepository;
@@ -165,13 +170,7 @@ public class OrderHandler {
     private void validateEnterOrderRq(EnterOrderRq enterOrderRq) throws InvalidRequestException {
         List<String> errors = new LinkedList<>();
 
-        errors.addAll(validateOrder(enterOrderRq));
-        errors.addAll(validateSecurity(enterOrderRq));
-        errors.addAll(validateBroker(enterOrderRq));
-        errors.addAll(validateShareholder(enterOrderRq));
-        errors.addAll(validatePeakSize(enterOrderRq));
-        errors.addAll(validateMinimumExecutionQuantity(enterOrderRq));
-        errors.addAll(validateStopPrice(enterOrderRq));
+        errors.addAll(validations.validate(enterOrderRq, securityRepository, brokerRepository, shareholderRepository));
 
         if (!errors.isEmpty())
             throw new InvalidRequestException(errors);
@@ -192,24 +191,12 @@ public class OrderHandler {
         List<String> errors = new LinkedList<>();
 
         errors.addAll(validateSecurity(changeMatchingStateRq));
-        
+
         if (!errors.isEmpty())
             throw new InvalidRequestException(errors);
     }
 
-    private List<String> validateSecurity(EnterOrderRq enterOrderRq) {
-        List<String> errors = new LinkedList<>();
-        Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
-        if (security == null)
-            errors.add(Message.UNKNOWN_SECURITY_ISIN);
-        else {
-            if (enterOrderRq.getQuantity() % security.getLotSize() != 0)
-                errors.add(Message.QUANTITY_NOT_MULTIPLE_OF_LOT_SIZE);
-            if (enterOrderRq.getPrice() % security.getTickSize() != 0)
-                errors.add(Message.PRICE_NOT_MULTIPLE_OF_TICK_SIZE);
-        }
-        return errors;
-    }
+
 
     private List<String> validateSecurity(DeleteOrderRq deleteOrderRq) {
         List<String> errors = new LinkedList<>();
@@ -226,27 +213,6 @@ public class OrderHandler {
         return errors;
     }
 
-    private List<String> validateOrder(EnterOrderRq enterOrderRq) {
-        List<String> errors = new LinkedList<>();
-        if (enterOrderRq.getOrderId() <= 0)
-            errors.add(Message.INVALID_ORDER_ID);
-        if (enterOrderRq.getQuantity() <= 0)
-            errors.add(Message.ORDER_QUANTITY_NOT_POSITIVE);
-        if (enterOrderRq.getPrice() <= 0)
-            errors.add(Message.ORDER_PRICE_NOT_POSITIVE);
-
-        Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
-        if (security != null) {
-            if (enterOrderRq.getRequestType() == OrderEntryType.UPDATE_ORDER) {
-                Order order = security.getOrderBook().findByOrderId(enterOrderRq.getSide(), enterOrderRq.getOrderId());
-                if (order == null)
-                    errors.add(Message.ORDER_ID_NOT_FOUND);
-            }
-        }
-
-        return errors;
-    }
-
     private List<String> validateOrder(DeleteOrderRq deleteOrderRq) {
         List<String> errors = new LinkedList<>();
         if (deleteOrderRq.getOrderId() <= 0)
@@ -258,82 +224,6 @@ public class OrderHandler {
             if (order == null)
                 errors.add(Message.ORDER_ID_NOT_FOUND);
         }
-        return errors;
-    }
-
-    private List<String> validateBroker(EnterOrderRq enterOrderRq) {
-        List<String> errors = new LinkedList<>();
-        if (brokerRepository.findBrokerById(enterOrderRq.getBrokerId()) == null)
-            errors.add(Message.UNKNOWN_BROKER_ID);
-        return errors;
-    }
-
-    private List<String> validateShareholder(EnterOrderRq enterOrderRq) {
-        List<String> errors = new LinkedList<>();
-        if (shareholderRepository.findShareholderById(enterOrderRq.getShareholderId()) == null)
-            errors.add(Message.UNKNOWN_SHAREHOLDER_ID);
-        return errors;
-    }
-
-    private List<String> validatePeakSize(EnterOrderRq enterOrderRq) {
-        List<String> errors = new LinkedList<>();
-        if (enterOrderRq.getPeakSize() < 0 || enterOrderRq.getPeakSize() >= enterOrderRq.getQuantity())
-            errors.add(Message.INVALID_PEAK_SIZE);
-
-        Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
-        if (security != null) {
-            Order order = security.getOrderBook().findByOrderId(enterOrderRq.getSide(), enterOrderRq.getOrderId());
-            if ((order instanceof IcebergOrder) && enterOrderRq.getPeakSize() == 0)
-                errors.add(Message.INVALID_PEAK_SIZE);
-            if (order != null && !(order instanceof IcebergOrder) && enterOrderRq.getPeakSize() != 0)
-                errors.add(Message.CANNOT_SPECIFY_PEAK_SIZE_FOR_A_NON_ICEBERG_ORDER);
-        }
-        return errors;
-    }
-
-    private List<String> validateMinimumExecutionQuantity(EnterOrderRq enterOrderRq) {
-        List<String> errors = new LinkedList<>();
-
-        if (enterOrderRq.getMinimumExecutionQuantity() < 0)
-            errors.add(Message.ORDER_MINIMUM_EXECUTION_QUANTITY_NOT_POSITIVE);
-        if (enterOrderRq.getMinimumExecutionQuantity() > enterOrderRq.getQuantity())
-            errors.add(Message.MINIMUM_EXECUTION_QUANTITY_NOT_LESS_THAN_OR_EQUAL_TO_QUANTITY);
-
-        Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
-        if (security != null) {
-            if (security.getMatchingState() == MatchingState.AUCTION)
-                if (enterOrderRq.getMinimumExecutionQuantity() > 0)
-                    errors.add(Message.CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_IN_THE_AUCTION_STATE);
-            Order order = security.getOrderBook().findByOrderId(enterOrderRq.getSide(), enterOrderRq.getOrderId());
-            if (order != null)
-                if (order.getMinimumExecutionQuantity() != enterOrderRq.getMinimumExecutionQuantity())
-                    errors.add(Message.MINIMUM_EXECUTION_QUANTITY_OF_UPDATE_ORDER_HAS_CHANGED);
-        }
-
-        return errors;
-    }
-
-    private List<String> validateStopPrice(EnterOrderRq enterOrderRq) {
-        List<String> errors = new LinkedList<>();
-
-        if (enterOrderRq.getStopPrice() > 0) {
-            if (enterOrderRq.getMinimumExecutionQuantity() > 0)
-                errors.add(Message.CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_FOR_A_STOP_LIMIT_ORDER);
-            if (enterOrderRq.getPeakSize() > 0)
-                errors.add(Message.STOP_LIMIT_ORDER_CAN_NOT_BE_ICEBERG_ORDER);
-        }
-
-        Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
-        if (security != null) {
-            if (security.getMatchingState() == MatchingState.AUCTION)
-                if (enterOrderRq.getStopPrice() != 0)
-                    errors.add(Message.CANNOT_SUBMIT_OR_UPDATE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE);
-            Order order = security.getOrderBook().findByOrderId(enterOrderRq.getSide(), enterOrderRq.getOrderId());
-            if (order != null)
-                if (!(order instanceof StopLimitOrder) && enterOrderRq.getStopPrice() > 0)
-                    errors.add(Message.CANNOT_SPECIFY_STOP_PRICE_FOR_A_ACTIVATED_ORDER);
-        }
-
         return errors;
     }
 
