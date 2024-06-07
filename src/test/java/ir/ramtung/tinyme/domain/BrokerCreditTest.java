@@ -15,6 +15,7 @@ import ir.ramtung.tinyme.repository.SecurityRepository;
 import ir.ramtung.tinyme.repository.ShareholderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.internal.matchers.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -138,8 +139,7 @@ public class BrokerCreditTest {
     @Test
     void delete_sell_order() {
         try {
-            DeleteOrderRq deleteOrderRq = new DeleteOrderRq(1, security.getIsin(), Side.SELL, 6);
-            security.deleteOrder(deleteOrderRq);
+            security.deleteOrder(orders.get(5));
             assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
             assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
         } catch (Exception ignored) {}
@@ -148,8 +148,7 @@ public class BrokerCreditTest {
     @Test
     void delete_buy_order() {
         try {
-            DeleteOrderRq deleteOrderRq = new DeleteOrderRq(1, security.getIsin(), Side.BUY, 3);
-            security.deleteOrder(deleteOrderRq);
+            security.deleteOrder(orders.get(2));
             assertThat(broker1.getCredit()).isEqualTo(106_875_250L);
             assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
         } catch (Exception ignored) {}
@@ -217,7 +216,7 @@ public class BrokerCreditTest {
         matcher.execute(stopLimitOrder);
         assertThat(broker1.getCredit()).isEqualTo(98_430_000L);
         try {
-            security.deleteOrder(new DeleteOrderRq(1, security.getIsin(), Side.BUY, 20));
+            security.deleteOrder(stopLimitOrder);
             assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
         } catch (Exception ignored) {}
     }
@@ -229,7 +228,7 @@ public class BrokerCreditTest {
         matcher.execute(stopLimitOrder);
         assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
         try {
-            security.deleteOrder(new DeleteOrderRq(1, security.getIsin(), Side.SELL, 20));
+            security.deleteOrder(stopLimitOrder);
             assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
         } catch (Exception ignored) {}
     }
@@ -286,13 +285,15 @@ public class BrokerCreditTest {
     @Test
     void credit_of_buyer_is_decreased_when_auction(){
         security.setMatchingState(MatchingState.AUCTION);
-        security.newOrder(EnterOrderRq.createNewOrderRq(1, security.getIsin(), 11, LocalDateTime.now(), Side.BUY, 5000, 1000, broker2.getBrokerId(), shareholder.getShareholderId(), 0), broker2, shareholder, matcher);
+        Order order = new Order(11, security, Side.BUY, 5000, 1000, broker2, shareholder);
+        security.newOrder(order, matcher);
         assertThat(broker2.getCredit()).isEqualTo(95_000_000L);
     }
     @Test
     void credit_of_seller_does_not_change_when_auction(){
         security.setMatchingState(MatchingState.AUCTION);
-        security.newOrder(EnterOrderRq.createNewOrderRq(1, security.getIsin(), 11, LocalDateTime.now(), Side.SELL, 5000, 1000, broker2.getBrokerId(), shareholder.getShareholderId(), 0), broker2, shareholder, matcher);
+        Order order = new Order(11, security, Side.SELL, 5000, 1000, broker2, shareholder);
+        security.newOrder(order, matcher);
         assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
     }
 
@@ -300,7 +301,8 @@ public class BrokerCreditTest {
     void open_market_returns_back_extra_credit() {
         security.setMatchingState(MatchingState.AUCTION);
         security.setMarketPrice(15700);
-        security.newOrder(EnterOrderRq.createNewOrderRq(1, security.getIsin(), 11, LocalDateTime.now(), Side.BUY, 400, 15805, broker2.getBrokerId(), shareholder.getShareholderId(), 0), broker2, shareholder, matcher);
+        Order order = new Order(11, security, Side.BUY, 400, 15805, broker2, shareholder);
+        security.newOrder(order, matcher);
         assertThat(broker2.getCredit()).isEqualTo(93_678_000L);
         matcher.openMarket(security);
         assertThat(broker2.getCredit()).isEqualTo(93_679_750L);

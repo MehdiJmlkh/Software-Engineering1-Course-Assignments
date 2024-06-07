@@ -1,6 +1,9 @@
 package ir.ramtung.tinyme.domain.service;
 
 import ir.ramtung.tinyme.domain.entity.*;
+import ir.ramtung.tinyme.domain.entity.MatchingOutcome;
+import ir.ramtung.tinyme.domain.service.control.MatchingControlList;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -10,21 +13,31 @@ import java.util.ListIterator;
 
 @Service
 public class Matcher {
-    CreditHandler creditHandler = new CreditHandler();
-    public MatchResult match(Order newOrder, int openingPrice) {
+    @Autowired
+    private MatchingControlList controls;
+
+    public MatchResult match(Order newOrder,  int openingPrice) {
         OrderBook orderBook = newOrder.getSecurity().getOrderBook();
         LinkedList<Trade> trades = new LinkedList<>();
+
         while (orderBook.hasOrderOfType(newOrder.getSide().opposite()) && newOrder.getQuantity() > 0) {
             Order matchingOrder = orderBook.matchWithFirst(newOrder);
             if (matchingOrder == null)
                 break;
+
             int price = openingPrice == 0 ? matchingOrder.getPrice() : openingPrice;
             Trade trade = new Trade(newOrder.getSecurity(), price, Math.min(newOrder.getQuantity(), matchingOrder.getQuantity()), newOrder, matchingOrder);
-            if(creditHandler.handleTradeCredit(newOrder, trade) == CreditOutCome.NOT_ENOUGH) {
+
+            MatchingOutcome outcome = controls.canTrade(newOrder, trade);
+            if (outcome != MatchingOutcome.OK) {
+                controls.rollbackTrades(newOrder, trades);
                 rollbackTrades(newOrder, trades);
-                return MatchResult.notEnoughCredit();
+                return new MatchResult(outcome, newOrder);
             }
+
             trades.add(trade);
+            controls.tradeAccepted(newOrder, trade);
+
             if (newOrder.getQuantity() >= matchingOrder.getQuantity()) {
                 newOrder.decreaseQuantity(matchingOrder.getQuantity());
                 orderBook.removeFirst(matchingOrder.getSide());
@@ -49,51 +62,46 @@ public class Matcher {
     }
 
     private void rollbackTrades(Order newOrder, LinkedList<Trade> trades) {
-        creditHandler.rollBackCredits(newOrder, trades);
         ListIterator<Trade> it = trades.listIterator(trades.size());
         while (it.hasPrevious()) {
-            newOrder.getSecurity().getOrderBook().restoreOrder(it.previous().getSell());
+            if (newOrder.getSide() == Side.BUY)
+                newOrder.getSecurity().getOrderBook().restoreOrder(it.previous().getSell());
+            else
+                newOrder.getSecurity().getOrderBook().restoreOrder(it.previous().getBuy());
         }
     }
 
     public MatchResult execute(Order order, int openingPrice) {
-        Order orderSnapshot = order.snapshot();
-        if (order instanceof StopLimitOrder stopLimitOrder) {
-            StopStatus creditStatus = creditHandler.initStopLimitOrderCredit(stopLimitOrder);
-            if(creditStatus == StopStatus.NOT_ENOUGH){
-                return MatchResult.notEnoughCredit();
-            } else if (creditStatus == StopStatus.NOT_ACTIVATABLE) {
-                order.getSecurity().getOrderBook().enqueue(order);
-                return MatchResult.notActivatable();
-            }
+        MatchingOutcome outcome = controls.canStartMatching(order);
+        if (outcome != MatchingOutcome.OK)
+            return new MatchResult(outcome, order);
+
+        controls.matchingStarted(order);
+
+        outcome = controls.canContinueMatching(order);
+        if (outcome != MatchingOutcome.OK) {
+            return new MatchResult(outcome, order);
         }
 
         MatchResult result = match(order, openingPrice);
-        if (result.outcome() == MatchingOutcome.NOT_ENOUGH_CREDIT)
+        if (result.outcome() != MatchingOutcome.OK)
             return result;
 
-        if(!result.remainder().matchedMinimumExecutionQuantity(orderSnapshot.getQuantity()) && order.isNew()) {
+        outcome = controls.canAcceptMatching(order, result);
+        if (outcome != MatchingOutcome.OK) {
+            controls.rollbackTrades(order, result.trades());
             rollbackTrades(order, result.trades());
-            return MatchResult.notEnoughExecutionQuantity();
+            return new MatchResult(outcome, order);
         }
 
         if (result.remainder().getQuantity() > 0) {
-            if (order.getSide() == Side.BUY) {
-                if (!order.getBroker().hasEnoughCredit((long)order.getPrice() * order.getQuantity())) {
-                    rollbackTrades(order, result.trades());
-                    return MatchResult.notEnoughCredit();
-                }
-                order.getBroker().decreaseCreditBy((long)order.getPrice() * order.getQuantity());
-            }
             order.getSecurity().getOrderBook().enqueue(result.remainder());
         }
-        if (!result.trades().isEmpty()) {
-            for (Trade trade : result.trades()) {
-                trade.getBuy().getShareholder().incPosition(trade.getSecurity(), trade.getQuantity());
-                trade.getSell().getShareholder().decPosition(trade.getSecurity(), trade.getQuantity());
-            }
-        }
+
+        controls.matchingAccepted(order, result);
+
         order.getSecurity().updateMarketPrice(result);
+
         return result;
     }
 
@@ -114,7 +122,9 @@ public class Matcher {
                 break;
             }
             lastOrder = order.snapshot();
-            order.getBroker().increaseCreditBy(order.getValue());
+
+            controls.marketOpenned(order);
+
             MatchResult result = execute(order, openingPrice);
             if (!lastOrder.equalIdandQuantity(result.remainder()))
                 trades.addAll(result.trades());

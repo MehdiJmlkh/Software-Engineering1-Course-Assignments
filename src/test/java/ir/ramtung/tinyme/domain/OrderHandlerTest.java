@@ -8,6 +8,7 @@ import ir.ramtung.tinyme.messaging.EventPublisher;
 import ir.ramtung.tinyme.messaging.Message;
 import ir.ramtung.tinyme.messaging.TradeDTO;
 import ir.ramtung.tinyme.messaging.event.*;
+import ir.ramtung.tinyme.messaging.exception.InvalidRequestException;
 import ir.ramtung.tinyme.messaging.request.ChangeMatchingStateRq;
 import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
@@ -30,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -46,6 +48,8 @@ public class OrderHandlerTest {
     BrokerRepository brokerRepository;
     @Autowired
     ShareholderRepository shareholderRepository;
+    @Autowired
+    Matcher matcher;
     private Security security;
     private Shareholder shareholder;
     private Broker broker1;
@@ -127,7 +131,7 @@ public class OrderHandlerTest {
                 matchingBuyOrder, incomingSellOrder);
 
         EventPublisher mockEventPublisher = mock(EventPublisher.class, withSettings().verboseLogging());
-        OrderHandler myOrderHandler = new OrderHandler(securityRepository, brokerRepository, shareholderRepository, mockEventPublisher, new Matcher());
+        OrderHandler myOrderHandler = new OrderHandler(securityRepository, brokerRepository, shareholderRepository, mockEventPublisher, matcher);
         myOrderHandler.handleEnterOrder(EnterOrderRq.createNewOrderRq(1,
                 incomingSellOrder.getSecurity().getIsin(),
                 incomingSellOrder.getOrderId(),
@@ -678,5 +682,20 @@ public class OrderHandlerTest {
         security.setMatchingState(MatchingState.AUCTION);
         orderHandler.handleDeleteOrder(new DeleteOrderRq(7, "ABC", Side.BUY, 2));
         eventPublisher.publish(new OpeningPriceEvent("ABC", 0, 0));
+    }
+
+    @Test
+    void updating_non_existing_order_fails() {
+        EnterOrderRq updateOrderRq = EnterOrderRq.createUpdateOrderRq(1, security.getIsin(), 6, LocalDateTime.now(), Side.BUY, 350, 15700, broker1.getBrokerId(), 0, 0);
+        orderHandler.handleEnterOrder(updateOrderRq);
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 6, List.of(Message.ORDER_ID_NOT_FOUND)));
+    }
+
+    @Test
+    void deleting_non_existing_order_fails() {
+        setupOrderBook();
+        DeleteOrderRq deleteOrderRq = new DeleteOrderRq(1, security.getIsin(), Side.SELL, 1);
+        orderHandler.handleDeleteOrder(deleteOrderRq);
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 1, List.of(Message.ORDER_ID_NOT_FOUND)));
     }
 }

@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -29,25 +30,7 @@ public class Security {
     @Builder.Default
     private MatchingState matchingState = MatchingState.CONTINUOUS;
 
-    public MatchResult newOrder(EnterOrderRq enterOrderRq, Broker broker, Shareholder shareholder, Matcher matcher) {
-        if (enterOrderRq.getSide() == Side.SELL &&
-                !shareholder.hasEnoughPositionsOn(this,
-                orderBook.totalSellQuantityByShareholder(shareholder) + enterOrderRq.getQuantity()))
-            return MatchResult.notEnoughPositions();
-        Order order;
-        if (enterOrderRq.getPeakSize() == 0)
-            if(enterOrderRq.getStopPrice() == 0)
-                order = new Order(enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
-                        enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                        enterOrderRq.getEntryTime(), enterOrderRq.getMinimumExecutionQuantity());
-            else
-                order = new StopLimitOrder(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
-                        enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                        enterOrderRq.getEntryTime(), enterOrderRq.getStopPrice());
-        else
-            order = new IcebergOrder(enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
-                    enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                    enterOrderRq.getEntryTime(), enterOrderRq.getPeakSize(), enterOrderRq.getMinimumExecutionQuantity());
+    public MatchResult newOrder(Order order, Matcher matcher) {
         if (matchingState == MatchingState.AUCTION) {
             if (order.getSide() == Side.BUY)
                 order.getBroker().decreaseCreditBy(order.getValue());
@@ -58,30 +41,17 @@ public class Security {
             return matcher.execute(order);
     }
 
-    public void deleteOrder(DeleteOrderRq deleteOrderRq) throws InvalidRequestException {
-        Order order = orderBook.findByOrderId(deleteOrderRq.getSide(), deleteOrderRq.getOrderId());
-        if (order == null)
-            throw new InvalidRequestException(Message.ORDER_ID_NOT_FOUND);
+    public void deleteOrder(Order order) {
         if (order.getSide() == Side.BUY)
             order.getBroker().increaseCreditBy(order.getValue());
-        orderBook.removeByOrderId(deleteOrderRq.getSide(), deleteOrderRq.getOrderId());
+        orderBook.removeByOrderId(order.getSide(), order.getOrderId());
     }
 
-    public MatchResult updateOrder(EnterOrderRq updateOrderRq, Matcher matcher) throws InvalidRequestException {
+    public MatchResult updateOrder(EnterOrderRq updateOrderRq, Matcher matcher) {
         Order order = orderBook.findByOrderId(updateOrderRq.getSide(), updateOrderRq.getOrderId());
-        if (order == null)
-            throw new InvalidRequestException(Message.ORDER_ID_NOT_FOUND);
-        if ((order instanceof IcebergOrder) && updateOrderRq.getPeakSize() == 0)
-            throw new InvalidRequestException(Message.INVALID_PEAK_SIZE);
-        if (!(order instanceof IcebergOrder) && updateOrderRq.getPeakSize() != 0)
-            throw new InvalidRequestException(Message.CANNOT_SPECIFY_PEAK_SIZE_FOR_A_NON_ICEBERG_ORDER);
-        if (!(order instanceof StopLimitOrder) && updateOrderRq.getStopPrice() > 0)
-            throw new InvalidRequestException(Message.CANNOT_SPECIFY_STOP_PRICE_FOR_A_ACTIVATED_ORDER);
 
         if (order instanceof StopLimitOrder stopLimitOrder)
             stopLimitOrder.setRequestId(updateOrderRq.getRequestId());
-        if (order.getMinimumExecutionQuantity() != updateOrderRq.getMinimumExecutionQuantity())
-            return MatchResult.notEqualMinimumExecutionQuantity();
 
         if (updateOrderRq.getSide() == Side.SELL &&
                 !order.getShareholder().hasEnoughPositionsOn(this,
@@ -91,22 +61,21 @@ public class Security {
         boolean losesPriority = order.isQuantityIncreased(updateOrderRq.getQuantity())
                 || updateOrderRq.getPrice() != order.getPrice()
                 || ((order instanceof IcebergOrder icebergOrder) && (icebergOrder.getPeakSize() < updateOrderRq.getPeakSize()));
+        if (!losesPriority) {
+            order.updateFromRequest(updateOrderRq);
+            return MatchResult.executed(null, List.of());
+        }
 
         if (updateOrderRq.getSide() == Side.BUY) {
             order.getBroker().increaseCreditBy(order.getValue());
         }
         Order originalOrder = order.snapshot();
         order.updateFromRequest(updateOrderRq);
-        if (!losesPriority) {
-            if (updateOrderRq.getSide() == Side.BUY) {
-                order.getBroker().decreaseCreditBy(order.getValue());
-            }
-            return MatchResult.executed(null, List.of());
-        }
+
 
         orderBook.removeByOrderId(updateOrderRq.getSide(), updateOrderRq.getOrderId());
         MatchResult matchResult = matcher.execute(order);
-        if (matchResult.outcome() != MatchingOutcome.EXECUTED) {
+        if (matchResult.outcome() != MatchingOutcome.OK) {
             orderBook.enqueue(originalOrder);
             if (updateOrderRq.getSide() == Side.BUY) {
                 originalOrder.getBroker().decreaseCreditBy(originalOrder.getValue());
@@ -153,8 +122,6 @@ public class Security {
         if (stopLimitOrder == null)
             stopLimitOrder = getOrderBook().activateFirst(Side.SELL, getMarketPrice());
 
-        if (stopLimitOrder == null)
-            return null;
         return stopLimitOrder;
     }
 

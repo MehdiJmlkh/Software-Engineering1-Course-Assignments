@@ -52,6 +52,6 @@ public class StopLimitOrder extends Order{
     }
 
     public Order activate() {
-        return new Order(orderId, security, side, quantity, price, broker, shareholder, entryTime);
+        return new Order(orderId, security, side, quantity, price, broker, shareholder, entryTime, OrderStatus.ACTIVATED);
     }
 }

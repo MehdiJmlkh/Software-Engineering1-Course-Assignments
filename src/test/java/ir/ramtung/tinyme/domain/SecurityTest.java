@@ -2,10 +2,6 @@ package ir.ramtung.tinyme.domain;
 
 import ir.ramtung.tinyme.config.MockedJMSTestConfig;
 import ir.ramtung.tinyme.domain.entity.*;
-import ir.ramtung.tinyme.messaging.event.OpeningPriceEvent;
-import ir.ramtung.tinyme.messaging.exception.InvalidRequestException;
-import ir.ramtung.tinyme.messaging.request.ChangeMatchingStateRq;
-import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.domain.service.Matcher;
 import ir.ramtung.tinyme.messaging.request.MatchingState;
@@ -20,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @Import(MockedJMSTestConfig.class)
@@ -48,6 +43,19 @@ class SecurityTest {
                 new Order(8, security, Side.SELL, 800, 15810, broker, shareholder),
                 new Order(9, security, Side.SELL, 340, 15820, broker, shareholder),
                 new Order(10, security, Side.SELL, 65, 15820, broker, shareholder)
+        );
+        orders.forEach(order -> security.getOrderBook().enqueue(order));
+    }
+
+    private void setupOrderBookWithIcebergOrder() {
+        security = Security.builder().build();
+        broker = Broker.builder().build();
+        orders = Arrays.asList(
+                new Order(1, security, Side.BUY, 304, 15700, broker, shareholder),
+                new Order(2, security, Side.BUY, 43, 15500, broker, shareholder),
+                new IcebergOrder(3, security, Side.BUY, 445, 15450, broker, shareholder, 100),
+                new Order(4, security, Side.BUY, 526, 15450, broker, shareholder),
+                new Order(5, security, Side.BUY, 1000, 15400, broker, shareholder)
         );
         orders.forEach(order -> security.getOrderBook().enqueue(order));
     }
@@ -86,37 +94,15 @@ class SecurityTest {
     }
 
     @Test
-    void updating_non_existing_order_fails() {
-        EnterOrderRq updateOrderRq = EnterOrderRq.createUpdateOrderRq(1, security.getIsin(), 6, LocalDateTime.now(), Side.BUY, 350, 15700, 0, 0, 0);
-        assertThatExceptionOfType(InvalidRequestException.class).isThrownBy(() -> security.updateOrder(updateOrderRq, matcher));
-    }
-
-    @Test
     void delete_order_works() {
-        DeleteOrderRq deleteOrderRq = new DeleteOrderRq(1, security.getIsin(), Side.SELL, 6);
-        assertThatNoException().isThrownBy(() -> security.deleteOrder(deleteOrderRq));
+        assertThatNoException().isThrownBy(() -> security.deleteOrder(orders.get(5)));
         assertThat(security.getOrderBook().getBuyQueue()).isEqualTo(orders.subList(0, 5));
         assertThat(security.getOrderBook().getSellQueue()).isEqualTo(orders.subList(6, 10));
     }
 
     @Test
-    void deleting_non_existing_order_fails() {
-        DeleteOrderRq deleteOrderRq = new DeleteOrderRq(1, security.getIsin(), Side.SELL, 1);
-        assertThatExceptionOfType(InvalidRequestException.class).isThrownBy(() -> security.deleteOrder(deleteOrderRq));
-    }
-
-    @Test
     void increasing_iceberg_peak_size_changes_priority() {
-        security = Security.builder().build();
-        broker = Broker.builder().credit(1_000_000L).build();
-        orders = Arrays.asList(
-                new Order(1, security, Side.BUY, 304, 15700, broker, shareholder),
-                new Order(2, security, Side.BUY, 43, 15500, broker, shareholder),
-                new IcebergOrder(3, security, Side.BUY, 445, 15450, broker, shareholder, 100),
-                new Order(4, security, Side.BUY, 526, 15450, broker, shareholder),
-                new Order(5, security, Side.BUY, 1000, 15400, broker, shareholder)
-        );
-        orders.forEach(order -> security.getOrderBook().enqueue(order));
+        setupOrderBookWithIcebergOrder();
         EnterOrderRq updateOrderRq = EnterOrderRq.createUpdateOrderRq(1, security.getIsin(), 3, LocalDateTime.now(), Side.BUY, 445, 15450, 0, 0, 150);
         assertThatNoException().isThrownBy(() -> security.updateOrder(updateOrderRq, matcher));
         assertThat(security.getOrderBook().getBuyQueue().get(3).getQuantity()).isEqualTo(150);
@@ -125,20 +111,12 @@ class SecurityTest {
 
     @Test
     void decreasing_iceberg_quantity_to_amount_larger_than_peak_size_does_not_changes_priority() {
-        security = Security.builder().build();
-        broker = Broker.builder().build();
-        orders = Arrays.asList(
-                new Order(1, security, Side.BUY, 304, 15700, broker, shareholder),
-                new Order(2, security, Side.BUY, 43, 15500, broker, shareholder),
-                new IcebergOrder(3, security, Side.BUY, 445, 15450, broker, shareholder, 100),
-                new Order(4, security, Side.BUY, 526, 15450, broker, shareholder),
-                new Order(5, security, Side.BUY, 1000, 15400, broker, shareholder)
-        );
-        orders.forEach(order -> security.getOrderBook().enqueue(order));
+        setupOrderBookWithIcebergOrder();
         EnterOrderRq updateOrderRq = EnterOrderRq.createUpdateOrderRq(1, security.getIsin(), 3, LocalDateTime.now(), Side.BUY, 300, 15450, 0, 0, 100);
         assertThatNoException().isThrownBy(() -> security.updateOrder(updateOrderRq, matcher));
         assertThat(security.getOrderBook().getBuyQueue().get(2).getOrderId()).isEqualTo(3);
     }
+
     @Test
     void validate_market_price(){
         Order order = new Order(50, security, Side.SELL, 304, 15600, broker, shareholder);
@@ -150,11 +128,8 @@ class SecurityTest {
     @Test
     void update_stop_limit_order_will_change_request_id() {
         security.getOrderBook().enqueue(new StopLimitOrder(1, 11, security, Side.BUY, 100, 15800, broker, shareholder, 15700));
-        try {
-            security.updateOrder(EnterOrderRq.createUpdateOrderRq(2, security.getIsin(),11, LocalDateTime.now(), Side.BUY, 100, 15700, broker.getBrokerId(), shareholder.getShareholderId(), 0, 0, 15700), matcher);
-            assertThat(((StopLimitOrder)security.getOrderBook().getStopBuyQueue().getFirst()).getRequestId()).isEqualTo(2);
-        } catch (InvalidRequestException ignored) {}
-
+        security.updateOrder(EnterOrderRq.createUpdateOrderRq(2, security.getIsin(),11, LocalDateTime.now(), Side.BUY, 100, 15700, broker.getBrokerId(), shareholder.getShareholderId(), 0, 0, 15700), matcher);
+        assertThat(((StopLimitOrder)security.getOrderBook().getStopBuyQueue().getFirst()).getRequestId()).isEqualTo(2);
     }
 
     @Test
