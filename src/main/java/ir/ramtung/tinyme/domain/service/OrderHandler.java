@@ -42,7 +42,7 @@ public class OrderHandler {
 
             MatchResult matchResult;
             if (enterOrderRq.getRequestType() == OrderEntryType.NEW_ORDER)
-                matchResult = security.newOrder(enterOrderRq, broker, shareholder, matcher);
+                matchResult = security.newOrder(createNewOrder(enterOrderRq), broker, shareholder, matcher);
             else
                 matchResult = security.updateOrder(enterOrderRq, matcher);
 
@@ -140,6 +140,28 @@ public class OrderHandler {
             checkNewActivation(security);
         } catch (InvalidRequestException ignored) {
         }
+    }
+
+    private Order createNewOrder(EnterOrderRq enterOrderRq) {
+        Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
+        Broker broker = brokerRepository.findBrokerById(enterOrderRq.getBrokerId());
+        Shareholder shareholder = shareholderRepository.findShareholderById(enterOrderRq.getShareholderId());
+        Order order;
+
+        if (enterOrderRq.getPeakSize() == 0)
+            if(enterOrderRq.getStopPrice() == 0)
+                order = new Order(enterOrderRq.getOrderId(), security, enterOrderRq.getSide(),
+                        enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
+                        enterOrderRq.getEntryTime(), enterOrderRq.getMinimumExecutionQuantity());
+            else
+                order = new StopLimitOrder(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), security, enterOrderRq.getSide(),
+                        enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
+                        enterOrderRq.getEntryTime(), enterOrderRq.getStopPrice());
+        else
+            order = new IcebergOrder(enterOrderRq.getOrderId(), security, enterOrderRq.getSide(),
+                    enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
+                    enterOrderRq.getEntryTime(), enterOrderRq.getPeakSize(), enterOrderRq.getMinimumExecutionQuantity());
+        return order;
     }
 
     private void validateEnterOrderRq(EnterOrderRq enterOrderRq) throws InvalidRequestException {

@@ -15,6 +15,7 @@ import ir.ramtung.tinyme.repository.SecurityRepository;
 import ir.ramtung.tinyme.repository.ShareholderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.internal.matchers.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -286,13 +287,15 @@ public class BrokerCreditTest {
     @Test
     void credit_of_buyer_is_decreased_when_auction(){
         security.setMatchingState(MatchingState.AUCTION);
-        security.newOrder(EnterOrderRq.createNewOrderRq(1, security.getIsin(), 11, LocalDateTime.now(), Side.BUY, 5000, 1000, broker2.getBrokerId(), shareholder.getShareholderId(), 0), broker2, shareholder, matcher);
+        Order order = new Order(11, security, Side.BUY, 5000, 1000, broker2, shareholder);
+        security.newOrder(order, broker2, shareholder, matcher);
         assertThat(broker2.getCredit()).isEqualTo(95_000_000L);
     }
     @Test
     void credit_of_seller_does_not_change_when_auction(){
         security.setMatchingState(MatchingState.AUCTION);
-        security.newOrder(EnterOrderRq.createNewOrderRq(1, security.getIsin(), 11, LocalDateTime.now(), Side.SELL, 5000, 1000, broker2.getBrokerId(), shareholder.getShareholderId(), 0), broker2, shareholder, matcher);
+        Order order = new Order(11, security, Side.SELL, 5000, 1000, broker2, shareholder);
+        security.newOrder(order, broker2, shareholder, matcher);
         assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
     }
 
@@ -300,7 +303,8 @@ public class BrokerCreditTest {
     void open_market_returns_back_extra_credit() {
         security.setMatchingState(MatchingState.AUCTION);
         security.setMarketPrice(15700);
-        security.newOrder(EnterOrderRq.createNewOrderRq(1, security.getIsin(), 11, LocalDateTime.now(), Side.BUY, 400, 15805, broker2.getBrokerId(), shareholder.getShareholderId(), 0), broker2, shareholder, matcher);
+        Order order = new Order(11, security, Side.BUY, 400, 15805, broker2, shareholder);
+        security.newOrder(order, broker2, shareholder, matcher);
         assertThat(broker2.getCredit()).isEqualTo(93_678_000L);
         matcher.openMarket(security);
         assertThat(broker2.getCredit()).isEqualTo(93_679_750L);

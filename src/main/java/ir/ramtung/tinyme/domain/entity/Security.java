@@ -29,21 +29,7 @@ public class Security {
     @Builder.Default
     private MatchingState matchingState = MatchingState.CONTINUOUS;
 
-    public MatchResult newOrder(EnterOrderRq enterOrderRq, Broker broker, Shareholder shareholder, Matcher matcher) {
-        Order order;
-        if (enterOrderRq.getPeakSize() == 0)
-            if(enterOrderRq.getStopPrice() == 0)
-                order = new Order(enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
-                        enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                        enterOrderRq.getEntryTime(), enterOrderRq.getMinimumExecutionQuantity());
-            else
-                order = new StopLimitOrder(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
-                        enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                        enterOrderRq.getEntryTime(), enterOrderRq.getStopPrice());
-        else
-            order = new IcebergOrder(enterOrderRq.getOrderId(), this, enterOrderRq.getSide(),
-                    enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                    enterOrderRq.getEntryTime(), enterOrderRq.getPeakSize(), enterOrderRq.getMinimumExecutionQuantity());
+    public MatchResult newOrder(Order order, Broker broker, Shareholder shareholder, Matcher matcher) {
         if (matchingState == MatchingState.AUCTION) {
             if (order.getSide() == Side.BUY)
                 order.getBroker().decreaseCreditBy(order.getValue());
