@@ -94,12 +94,6 @@ class SecurityTest {
     }
 
     @Test
-    void deleting_non_existing_order_fails() {
-        DeleteOrderRq deleteOrderRq = new DeleteOrderRq(1, security.getIsin(), Side.SELL, 1);
-        assertThatExceptionOfType(InvalidRequestException.class).isThrownBy(() -> security.deleteOrder(deleteOrderRq));
-    }
-
-    @Test
     void increasing_iceberg_peak_size_changes_priority() {
         security = Security.builder().build();
         broker = Broker.builder().credit(1_000_000L).build();

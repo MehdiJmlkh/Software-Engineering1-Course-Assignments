@@ -690,4 +690,12 @@ public class OrderHandlerTest {
         orderHandler.handleEnterOrder(updateOrderRq);
         verify(eventPublisher).publish(new OrderRejectedEvent(1, 6, List.of(Message.UNKNOWN_BROKER_ID)));
     }
+
+    @Test
+    void deleting_non_existing_order_fails() {
+        setupOrderBook();
+        DeleteOrderRq deleteOrderRq = new DeleteOrderRq(1, security.getIsin(), Side.SELL, 1);
+        orderHandler.handleDeleteOrder(deleteOrderRq);
+        verify(eventPublisher).publish(new OrderRejectedEvent(1, 1, List.of(Message.ORDER_ID_NOT_FOUND)));
+    }
 }
