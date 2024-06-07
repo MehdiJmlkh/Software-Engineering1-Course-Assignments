@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ChangeMatchingStateRq implements Request {
+public class ChangeMatchingStateRq {
     private String securityIsin;
     private MatchingState targetState;
 

@@ -14,7 +14,7 @@ import static java.lang.Double.POSITIVE_INFINITY;
 
 @Data
 @NoArgsConstructor
-public class EnterOrderRq implements Request{
+public class EnterOrderRq {
     private OrderEntryType requestType;
     private long requestId;
     private String securityIsin;
