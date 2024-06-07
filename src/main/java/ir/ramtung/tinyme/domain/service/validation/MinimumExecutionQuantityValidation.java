@@ -5,9 +5,7 @@ import ir.ramtung.tinyme.domain.entity.Security;
 import ir.ramtung.tinyme.messaging.Message;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.messaging.request.MatchingState;
-import ir.ramtung.tinyme.repository.BrokerRepository;
-import ir.ramtung.tinyme.repository.SecurityRepository;
-import ir.ramtung.tinyme.repository.ShareholderRepository;
+import ir.ramtung.tinyme.repository.Repositories;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
@@ -16,7 +14,7 @@ import java.util.List;
 @Component
 public class MinimumExecutionQuantityValidation implements Validation {
     @Override
-    public List<String> validate(EnterOrderRq enterOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
+    public List<String> validate(EnterOrderRq enterOrderRq, Repositories repositories) {
         List<String> errors = new LinkedList<>();
 
         if (enterOrderRq.getMinimumExecutionQuantity() < 0)
@@ -24,7 +22,7 @@ public class MinimumExecutionQuantityValidation implements Validation {
         if (enterOrderRq.getMinimumExecutionQuantity() > enterOrderRq.getQuantity())
             errors.add(Message.MINIMUM_EXECUTION_QUANTITY_NOT_LESS_THAN_OR_EQUAL_TO_QUANTITY);
 
-        Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
+        Security security = repositories.getSecurityRepository().findSecurityByIsin(enterOrderRq.getSecurityIsin());
         if (security != null) {
             if (security.getMatchingState() == MatchingState.AUCTION && enterOrderRq.getMinimumExecutionQuantity() > 0)
                 errors.add(Message.CANNOT_SPECIFY_MINIMUM_EXECUTION_QUANTITY_IN_THE_AUCTION_STATE);

@@ -9,6 +9,7 @@ import ir.ramtung.tinyme.messaging.TradeDTO;
 import ir.ramtung.tinyme.messaging.event.*;
 import ir.ramtung.tinyme.messaging.request.*;
 import ir.ramtung.tinyme.repository.BrokerRepository;
+import ir.ramtung.tinyme.repository.Repositories;
 import ir.ramtung.tinyme.repository.SecurityRepository;
 import ir.ramtung.tinyme.repository.ShareholderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ public class OrderHandler {
     BrokerRepository brokerRepository;
     ShareholderRepository shareholderRepository;
     EventPublisher eventPublisher;
+    Repositories repositories;
     Matcher matcher;
 
     @Autowired
@@ -33,13 +35,16 @@ public class OrderHandler {
         this.securityRepository = securityRepository;
         this.brokerRepository = brokerRepository;
         this.shareholderRepository = shareholderRepository;
+        this.repositories = new Repositories(shareholderRepository,
+                                             securityRepository,
+                                             brokerRepository);
         this.eventPublisher = eventPublisher;
         this.matcher = matcher;
     }
 
     public void handleEnterOrder(EnterOrderRq enterOrderRq) {
         try {
-            validations.validate(enterOrderRq, securityRepository, brokerRepository, shareholderRepository);
+            validations.validate(enterOrderRq, repositories);
 
             Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
 
@@ -117,7 +122,7 @@ public class OrderHandler {
 
     public void handleDeleteOrder(DeleteOrderRq deleteOrderRq) {
         try {
-            validations.validate(deleteOrderRq, securityRepository, brokerRepository, shareholderRepository);
+            validations.validate(deleteOrderRq, repositories);
             Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
             Order order = security.getOrderBook().findByOrderId(deleteOrderRq.getSide(), deleteOrderRq.getOrderId());
             security.deleteOrder(order);
@@ -131,7 +136,7 @@ public class OrderHandler {
 
     public void handleChangeMatchingState(ChangeMatchingStateRq changeMatchingStateRq) {
         try {
-            validations.validate(changeMatchingStateRq, securityRepository, brokerRepository, shareholderRepository);
+            validations.validate(changeMatchingStateRq, repositories);
             Security security = securityRepository.findSecurityByIsin(changeMatchingStateRq.getSecurityIsin());
             List<Trade> trades = security.changeMatchingState(changeMatchingStateRq, matcher);
 

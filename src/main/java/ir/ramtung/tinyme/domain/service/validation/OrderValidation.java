@@ -6,9 +6,7 @@ import ir.ramtung.tinyme.messaging.Message;
 import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.messaging.request.OrderEntryType;
-import ir.ramtung.tinyme.repository.BrokerRepository;
-import ir.ramtung.tinyme.repository.SecurityRepository;
-import ir.ramtung.tinyme.repository.ShareholderRepository;
+import ir.ramtung.tinyme.repository.Repositories;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
@@ -17,7 +15,7 @@ import java.util.List;
 @Component
 public class OrderValidation implements Validation {
     @Override
-    public List<String> validate(EnterOrderRq enterOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
+    public List<String> validate(EnterOrderRq enterOrderRq, Repositories repositories) {
         List<String> errors = new LinkedList<>();
 
         if (enterOrderRq.getOrderId() <= 0)
@@ -27,7 +25,7 @@ public class OrderValidation implements Validation {
         if (enterOrderRq.getPrice() <= 0)
             errors.add(Message.ORDER_PRICE_NOT_POSITIVE);
 
-        Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
+        Security security = repositories.getSecurityRepository().findSecurityByIsin(enterOrderRq.getSecurityIsin());
         if (security != null && enterOrderRq.getRequestType() == OrderEntryType.UPDATE_ORDER) {
             Order order = security.getOrderBook().findByOrderId(enterOrderRq.getSide(), enterOrderRq.getOrderId());
             if (order == null)
@@ -37,13 +35,13 @@ public class OrderValidation implements Validation {
     }
 
     @Override
-    public List<String> validate(DeleteOrderRq deleteOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
+    public List<String> validate(DeleteOrderRq deleteOrderRq, Repositories repositories) {
         List<String> errors = new LinkedList<>();
 
         if (deleteOrderRq.getOrderId() <= 0)
             errors.add(Message.INVALID_ORDER_ID);
 
-        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
+        Security security = repositories.getSecurityRepository().findSecurityByIsin(deleteOrderRq.getSecurityIsin());
         if (security != null) {
             Order order = security.getOrderBook().findByOrderId(deleteOrderRq.getSide(), deleteOrderRq.getOrderId());
             if (order == null)

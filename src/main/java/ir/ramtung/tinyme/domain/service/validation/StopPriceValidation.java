@@ -7,9 +7,7 @@ import ir.ramtung.tinyme.messaging.Message;
 import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
 import ir.ramtung.tinyme.messaging.request.MatchingState;
-import ir.ramtung.tinyme.repository.BrokerRepository;
-import ir.ramtung.tinyme.repository.SecurityRepository;
-import ir.ramtung.tinyme.repository.ShareholderRepository;
+import ir.ramtung.tinyme.repository.Repositories;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
@@ -18,7 +16,7 @@ import java.util.List;
 @Component
 public class StopPriceValidation implements Validation {
     @Override
-    public List<String> validate(EnterOrderRq enterOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
+    public List<String> validate(EnterOrderRq enterOrderRq, Repositories repositories) {
         List<String> errors = new LinkedList<>();
 
         if (enterOrderRq.getStopPrice() > 0) {
@@ -28,7 +26,7 @@ public class StopPriceValidation implements Validation {
                 errors.add(Message.STOP_LIMIT_ORDER_CAN_NOT_BE_ICEBERG_ORDER);
         }
 
-        Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
+        Security security = repositories.getSecurityRepository().findSecurityByIsin(enterOrderRq.getSecurityIsin());
         if (security != null) {
             if (security.getMatchingState() == MatchingState.AUCTION && enterOrderRq.getStopPrice() != 0)
                 errors.add(Message.CANNOT_SUBMIT_OR_UPDATE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE);
@@ -42,10 +40,10 @@ public class StopPriceValidation implements Validation {
     }
 
     @Override
-    public List<String> validate(DeleteOrderRq deleteOrderRq, SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository) {
+    public List<String> validate(DeleteOrderRq deleteOrderRq, Repositories repositories) {
         List<String> errors = new LinkedList<>();
 
-        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
+        Security security = repositories.getSecurityRepository().findSecurityByIsin(deleteOrderRq.getSecurityIsin());
         if (security != null && security.getMatchingState() == MatchingState.AUCTION)
                 errors.add(Message.CANNOT_DELETE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE);
 
