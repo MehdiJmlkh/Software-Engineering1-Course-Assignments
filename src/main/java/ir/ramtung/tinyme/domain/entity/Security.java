@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -124,8 +125,6 @@ public class Security {
         if (stopLimitOrder == null)
             stopLimitOrder = getOrderBook().activateFirst(Side.SELL, getMarketPrice());
 
-        if (stopLimitOrder == null)
-            return null;
         return stopLimitOrder;
     }
 
