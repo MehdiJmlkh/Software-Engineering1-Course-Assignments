@@ -30,10 +30,6 @@ public class Security {
     private MatchingState matchingState = MatchingState.CONTINUOUS;
 
     public MatchResult newOrder(EnterOrderRq enterOrderRq, Broker broker, Shareholder shareholder, Matcher matcher) {
-        if (enterOrderRq.getSide() == Side.SELL &&
-                !shareholder.hasEnoughPositionsOn(this,
-                orderBook.totalSellQuantityByShareholder(shareholder) + enterOrderRq.getQuantity()))
-            return MatchResult.notEnoughPositions();
         Order order;
         if (enterOrderRq.getPeakSize() == 0)
             if(enterOrderRq.getStopPrice() == 0)
