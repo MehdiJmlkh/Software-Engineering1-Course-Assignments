@@ -139,8 +139,7 @@ public class BrokerCreditTest {
     @Test
     void delete_sell_order() {
         try {
-            DeleteOrderRq deleteOrderRq = new DeleteOrderRq(1, security.getIsin(), Side.SELL, 6);
-            security.deleteOrder(deleteOrderRq);
+            security.deleteOrder(orders.get(5));
             assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
             assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
         } catch (Exception ignored) {}
@@ -149,8 +148,7 @@ public class BrokerCreditTest {
     @Test
     void delete_buy_order() {
         try {
-            DeleteOrderRq deleteOrderRq = new DeleteOrderRq(1, security.getIsin(), Side.BUY, 3);
-            security.deleteOrder(deleteOrderRq);
+            security.deleteOrder(orders.get(2));
             assertThat(broker1.getCredit()).isEqualTo(106_875_250L);
             assertThat(broker2.getCredit()).isEqualTo(100_000_000L);
         } catch (Exception ignored) {}
@@ -218,7 +216,7 @@ public class BrokerCreditTest {
         matcher.execute(stopLimitOrder);
         assertThat(broker1.getCredit()).isEqualTo(98_430_000L);
         try {
-            security.deleteOrder(new DeleteOrderRq(1, security.getIsin(), Side.BUY, 20));
+            security.deleteOrder(stopLimitOrder);
             assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
         } catch (Exception ignored) {}
     }
@@ -230,7 +228,7 @@ public class BrokerCreditTest {
         matcher.execute(stopLimitOrder);
         assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
         try {
-            security.deleteOrder(new DeleteOrderRq(1, security.getIsin(), Side.SELL, 20));
+            security.deleteOrder(stopLimitOrder);
             assertThat(broker1.getCredit()).isEqualTo(100_000_000L);
         } catch (Exception ignored) {}
     }
