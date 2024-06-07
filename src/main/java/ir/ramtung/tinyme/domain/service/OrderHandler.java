@@ -172,25 +172,20 @@ public class OrderHandler {
         errors.addAll(validatePeakSize(enterOrderRq));
         errors.addAll(validateMinimumExecutionQuantity(enterOrderRq));
         errors.addAll(validateStopPrice(enterOrderRq));
-        
+
         if (!errors.isEmpty())
             throw new InvalidRequestException(errors);
     }
 
     private void validateDeleteOrderRq(DeleteOrderRq deleteOrderRq) throws InvalidRequestException {
         List<String> errors = new LinkedList<>();
-        if (deleteOrderRq.getOrderId() <= 0)
-            errors.add(Message.INVALID_ORDER_ID);
-        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
-        if (security == null)
-            errors.add(Message.UNKNOWN_SECURITY_ISIN);
-        else if (security.getMatchingState() == MatchingState.AUCTION)
-            errors.add(Message.CANNOT_DELETE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE);
+        
+        errors.addAll(validateOrder(deleteOrderRq));
+        errors.addAll(validateSecurity(deleteOrderRq));
+        errors.addAll(validateStopPrice(deleteOrderRq));
+
         if (!errors.isEmpty())
             throw new InvalidRequestException(errors);
-        Order order = security.getOrderBook().findByOrderId(deleteOrderRq.getSide(), deleteOrderRq.getOrderId());
-        if (order == null)
-            throw new InvalidRequestException(Message.ORDER_ID_NOT_FOUND);
     }
 
     private void validateChangeMatchingStateRq(ChangeMatchingStateRq changeMatchingStateRq) throws InvalidRequestException {
@@ -215,6 +210,14 @@ public class OrderHandler {
         return errors;
     }
 
+    private List<String> validateSecurity(DeleteOrderRq deleteOrderRq) {
+        List<String> errors = new LinkedList<>();
+        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
+        if (security == null)
+            errors.add(Message.UNKNOWN_SECURITY_ISIN);
+        return errors;
+    }
+
     private List<String> validateOrder(EnterOrderRq enterOrderRq) {
         List<String> errors = new LinkedList<>();
         if (enterOrderRq.getOrderId() <= 0)
@@ -233,6 +236,20 @@ public class OrderHandler {
             }
         }
 
+        return errors;
+    }
+
+    private List<String> validateOrder(DeleteOrderRq deleteOrderRq) {
+        List<String> errors = new LinkedList<>();
+        if (deleteOrderRq.getOrderId() <= 0)
+            errors.add(Message.INVALID_ORDER_ID);
+
+        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
+        if (security != null) {
+            Order order = security.getOrderBook().findByOrderId(deleteOrderRq.getSide(), deleteOrderRq.getOrderId());
+            if (order == null)
+                errors.add(Message.ORDER_ID_NOT_FOUND);
+        }
         return errors;
     }
 
@@ -309,6 +326,15 @@ public class OrderHandler {
                     errors.add(Message.CANNOT_SPECIFY_STOP_PRICE_FOR_A_ACTIVATED_ORDER);
         }
 
+        return errors;
+    }
+
+    private List<String> validateStopPrice(DeleteOrderRq deleteOrderRq) {
+        List<String> errors = new LinkedList<>();
+        Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
+        if (security != null)
+            if (security.getMatchingState() == MatchingState.AUCTION)
+                errors.add(Message.CANNOT_DELETE_STOP_LIMIT_ORDER_IN_THE_AUCTION_STATE);
         return errors;
     }
 
