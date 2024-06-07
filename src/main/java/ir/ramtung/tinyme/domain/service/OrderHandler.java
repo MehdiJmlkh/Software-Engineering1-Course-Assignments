@@ -10,6 +10,9 @@ import ir.ramtung.tinyme.messaging.request.*;
 import ir.ramtung.tinyme.repository.BrokerRepository;
 import ir.ramtung.tinyme.repository.SecurityRepository;
 import ir.ramtung.tinyme.repository.ShareholderRepository;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -23,13 +26,18 @@ public class OrderHandler {
     ShareholderRepository shareholderRepository;
     EventPublisher eventPublisher;
     Matcher matcher;
-
+    OrderFactory orderFactory;
     public OrderHandler(SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository, EventPublisher eventPublisher, Matcher matcher) {
         this.securityRepository = securityRepository;
         this.brokerRepository = brokerRepository;
         this.shareholderRepository = shareholderRepository;
         this.eventPublisher = eventPublisher;
         this.matcher = matcher;
+        this.orderFactory =  OrderFactory.builder()
+                .brokerRepository(brokerRepository)
+                .securityRepository(securityRepository)
+                .shareholderRepository(shareholderRepository)
+                .build();
     }
 
     public void handleEnterOrder(EnterOrderRq enterOrderRq) {
@@ -40,7 +48,7 @@ public class OrderHandler {
 
             MatchResult matchResult;
             if (enterOrderRq.getRequestType() == OrderEntryType.NEW_ORDER)
-                matchResult = security.newOrder(createNewOrder(enterOrderRq), matcher);
+                matchResult = security.newOrder(orderFactory.createOrder(enterOrderRq), matcher);
             else
                 matchResult = security.updateOrder(enterOrderRq, matcher);
 
@@ -141,27 +149,6 @@ public class OrderHandler {
         }
     }
 
-    private Order createNewOrder(EnterOrderRq enterOrderRq) {
-        Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
-        Broker broker = brokerRepository.findBrokerById(enterOrderRq.getBrokerId());
-        Shareholder shareholder = shareholderRepository.findShareholderById(enterOrderRq.getShareholderId());
-        Order order;
-
-        if (enterOrderRq.getPeakSize() == 0)
-            if(enterOrderRq.getStopPrice() == 0)
-                order = new Order(enterOrderRq.getOrderId(), security, enterOrderRq.getSide(),
-                        enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                        enterOrderRq.getEntryTime(), enterOrderRq.getMinimumExecutionQuantity());
-            else
-                order = new StopLimitOrder(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), security, enterOrderRq.getSide(),
-                        enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                        enterOrderRq.getEntryTime(), enterOrderRq.getStopPrice());
-        else
-            order = new IcebergOrder(enterOrderRq.getOrderId(), security, enterOrderRq.getSide(),
-                    enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                    enterOrderRq.getEntryTime(), enterOrderRq.getPeakSize(), enterOrderRq.getMinimumExecutionQuantity());
-        return order;
-    }
 
     private void validateEnterOrderRq(EnterOrderRq enterOrderRq) throws InvalidRequestException {
         List<String> errors = new LinkedList<>();
