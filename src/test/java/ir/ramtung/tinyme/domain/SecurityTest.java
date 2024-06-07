@@ -52,6 +52,19 @@ class SecurityTest {
         orders.forEach(order -> security.getOrderBook().enqueue(order));
     }
 
+    private void setupOrderBookWithIcebergOrder() {
+        security = Security.builder().build();
+        broker = Broker.builder().build();
+        orders = Arrays.asList(
+                new Order(1, security, Side.BUY, 304, 15700, broker, shareholder),
+                new Order(2, security, Side.BUY, 43, 15500, broker, shareholder),
+                new IcebergOrder(3, security, Side.BUY, 445, 15450, broker, shareholder, 100),
+                new Order(4, security, Side.BUY, 526, 15450, broker, shareholder),
+                new Order(5, security, Side.BUY, 1000, 15400, broker, shareholder)
+        );
+        orders.forEach(order -> security.getOrderBook().enqueue(order));
+    }
+
     @Test
     void reducing_quantity_does_not_change_priority() {
         EnterOrderRq updateOrderRq = EnterOrderRq.createUpdateOrderRq(1, security.getIsin(), 3, LocalDateTime.now(), Side.BUY, 440, 15450, 0, 0, 0);
@@ -94,16 +107,7 @@ class SecurityTest {
 
     @Test
     void increasing_iceberg_peak_size_changes_priority() {
-        security = Security.builder().build();
-        broker = Broker.builder().credit(1_000_000L).build();
-        orders = Arrays.asList(
-                new Order(1, security, Side.BUY, 304, 15700, broker, shareholder),
-                new Order(2, security, Side.BUY, 43, 15500, broker, shareholder),
-                new IcebergOrder(3, security, Side.BUY, 445, 15450, broker, shareholder, 100),
-                new Order(4, security, Side.BUY, 526, 15450, broker, shareholder),
-                new Order(5, security, Side.BUY, 1000, 15400, broker, shareholder)
-        );
-        orders.forEach(order -> security.getOrderBook().enqueue(order));
+        setupOrderBookWithIcebergOrder();
         EnterOrderRq updateOrderRq = EnterOrderRq.createUpdateOrderRq(1, security.getIsin(), 3, LocalDateTime.now(), Side.BUY, 445, 15450, 0, 0, 150);
         assertThatNoException().isThrownBy(() -> security.updateOrder(updateOrderRq, matcher));
         assertThat(security.getOrderBook().getBuyQueue().get(3).getQuantity()).isEqualTo(150);
@@ -112,20 +116,12 @@ class SecurityTest {
 
     @Test
     void decreasing_iceberg_quantity_to_amount_larger_than_peak_size_does_not_changes_priority() {
-        security = Security.builder().build();
-        broker = Broker.builder().build();
-        orders = Arrays.asList(
-                new Order(1, security, Side.BUY, 304, 15700, broker, shareholder),
-                new Order(2, security, Side.BUY, 43, 15500, broker, shareholder),
-                new IcebergOrder(3, security, Side.BUY, 445, 15450, broker, shareholder, 100),
-                new Order(4, security, Side.BUY, 526, 15450, broker, shareholder),
-                new Order(5, security, Side.BUY, 1000, 15400, broker, shareholder)
-        );
-        orders.forEach(order -> security.getOrderBook().enqueue(order));
+        setupOrderBookWithIcebergOrder();
         EnterOrderRq updateOrderRq = EnterOrderRq.createUpdateOrderRq(1, security.getIsin(), 3, LocalDateTime.now(), Side.BUY, 300, 15450, 0, 0, 100);
         assertThatNoException().isThrownBy(() -> security.updateOrder(updateOrderRq, matcher));
         assertThat(security.getOrderBook().getBuyQueue().get(2).getOrderId()).isEqualTo(3);
     }
+
     @Test
     void validate_market_price(){
         Order order = new Order(50, security, Side.SELL, 304, 15600, broker, shareholder);
