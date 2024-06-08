@@ -54,10 +54,9 @@ public class Security {
         if (order instanceof StopLimitOrder stopLimitOrder)
             stopLimitOrder.setRequestId(updateOrderRq.getRequestId());
 
-        if (updateOrderRq.getSide() == Side.SELL &&
-                !order.getShareholder().hasEnoughPositionsOn(this,
-                orderBook.totalSellQuantityByShareholder(order.getShareholder()) - order.getQuantity() + updateOrderRq.getQuantity()))
-            return MatchResult.notEnoughPositions();
+        MatchingOutcome outcome = canStartUpdating(updateOrderRq, order);
+        if (outcome != MatchingOutcome.OK)
+            return new MatchResult(outcome, null);
 
         boolean losesPriority = order.isQuantityIncreased(updateOrderRq.getQuantity())
                 || updateOrderRq.getPrice() != order.getPrice()
@@ -67,9 +66,8 @@ public class Security {
             return MatchResult.executed(null, List.of());
         }
 
-        if (updateOrderRq.getSide() == Side.BUY) {
-            order.getBroker().increaseCreditBy(order.getValue());
-        }
+        updatingStarted(updateOrderRq, order);
+
         Order originalOrder = order.snapshot();
         order.updateFromRequest(updateOrderRq);
 
@@ -78,11 +76,30 @@ public class Security {
         MatchResult matchResult = matcher.execute(order);
         if (matchResult.outcome() != MatchingOutcome.OK) {
             orderBook.enqueue(originalOrder);
-            if (updateOrderRq.getSide() == Side.BUY) {
-                originalOrder.getBroker().decreaseCreditBy(originalOrder.getValue());
-            }
+            updatingFailed(updateOrderRq, originalOrder);
         }
         return matchResult;
+    }
+
+    private static void updatingFailed(EnterOrderRq updateOrderRq, Order originalOrder) {
+        if (updateOrderRq.getSide() == Side.BUY) {
+            originalOrder.getBroker().decreaseCreditBy(originalOrder.getValue());
+        }
+    }
+
+    private static void updatingStarted(EnterOrderRq updateOrderRq, Order order) {
+        if (updateOrderRq.getSide() == Side.BUY) {
+            order.getBroker().increaseCreditBy(order.getValue());
+        }
+    }
+
+    private MatchingOutcome canStartUpdating(EnterOrderRq updateOrderRq, Order order) {
+        if ( updateOrderRq.getSide() == Side.SELL &&
+                !order.getShareholder().hasEnoughPositionsOn(this,
+                        orderBook.totalSellQuantityByShareholder(order.getShareholder()) - order.getQuantity() + updateOrderRq.getQuantity()))
+            return MatchingOutcome.NOT_ENOUGH_POSITIONS;
+
+        return MatchingOutcome.OK;
     }
 
     public List<Trade> changeMatchingState(ChangeMatchingStateRq changeMatchingStateRq, Matcher matcher) {
