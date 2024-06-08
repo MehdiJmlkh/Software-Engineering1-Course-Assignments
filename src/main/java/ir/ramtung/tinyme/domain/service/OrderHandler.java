@@ -13,6 +13,9 @@ import ir.ramtung.tinyme.repository.Repositories;
 import ir.ramtung.tinyme.repository.SecurityRepository;
 import ir.ramtung.tinyme.repository.ShareholderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -31,6 +34,7 @@ public class OrderHandler {
     @Autowired
     private ValidationList validations;
 
+    OrderFactory orderFactory;
     public OrderHandler(SecurityRepository securityRepository, BrokerRepository brokerRepository, ShareholderRepository shareholderRepository, EventPublisher eventPublisher, Matcher matcher) {
         this.securityRepository = securityRepository;
         this.brokerRepository = brokerRepository;
@@ -40,6 +44,11 @@ public class OrderHandler {
                                              brokerRepository);
         this.eventPublisher = eventPublisher;
         this.matcher = matcher;
+        this.orderFactory =  OrderFactory.builder()
+                .brokerRepository(brokerRepository)
+                .securityRepository(securityRepository)
+                .shareholderRepository(shareholderRepository)
+                .build();
     }
 
     public void handleEnterOrder(EnterOrderRq enterOrderRq) {
@@ -50,7 +59,7 @@ public class OrderHandler {
 
             MatchResult matchResult;
             if (enterOrderRq.getRequestType() == OrderEntryType.NEW_ORDER)
-                matchResult = security.newOrder(createNewOrder(enterOrderRq), matcher);
+                matchResult = security.newOrder(orderFactory.createOrder(enterOrderRq), matcher);
             else
                 matchResult = security.updateOrder(enterOrderRq, matcher);
 
