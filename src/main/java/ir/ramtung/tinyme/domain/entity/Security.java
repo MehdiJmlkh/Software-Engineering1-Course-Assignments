@@ -41,7 +41,8 @@ public class Security {
             return matcher.execute(order);
     }
 
-    public void deleteOrder(Order order) {
+    public void deleteOrder(DeleteOrderRq deleteOrderRq) {
+        Order order = orderBook.findByOrderId(deleteOrderRq.getSide(), deleteOrderRq.getOrderId());
         if (order.getSide() == Side.BUY)
             order.getBroker().increaseCreditBy(order.getValue());
         orderBook.removeByOrderId(order.getSide(), order.getOrderId());

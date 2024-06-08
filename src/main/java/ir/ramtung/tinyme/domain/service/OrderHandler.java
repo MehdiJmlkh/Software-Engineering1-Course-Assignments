@@ -50,9 +50,7 @@ public class OrderHandler {
     public void handleEnterOrder(EnterOrderRq enterOrderRq) {
         try {
             validations.validate(enterOrderRq, repositories);
-
             Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
-
             MatchResult matchResult;
             if (enterOrderRq.getRequestType() == OrderEntryType.NEW_ORDER)
                 matchResult = security.newOrder(orderFactory.createOrder(enterOrderRq), matcher);
@@ -73,8 +71,7 @@ public class OrderHandler {
         try {
             validations.validate(deleteOrderRq, repositories);
             Security security = securityRepository.findSecurityByIsin(deleteOrderRq.getSecurityIsin());
-            Order order = security.getOrderBook().findByOrderId(deleteOrderRq.getSide(), deleteOrderRq.getOrderId());
-            security.deleteOrder(order);
+            security.deleteOrder(deleteOrderRq);
             publishers.deleteOrderRqHandled(deleteOrderRq, security, eventPublisher);
         } catch (InvalidRequestException ex) {
             publishers.invalidRequestExceptionOccured(deleteOrderRq.getRequestId(), deleteOrderRq.getOrderId(), ex, eventPublisher);
@@ -86,7 +83,6 @@ public class OrderHandler {
             validations.validate(changeMatchingStateRq, repositories);
             Security security = securityRepository.findSecurityByIsin(changeMatchingStateRq.getSecurityIsin());
             List<Trade> trades = security.changeMatchingState(changeMatchingStateRq, matcher);
-
             publishers.changeMatchingStateRqHandled(changeMatchingStateRq, trades, eventPublisher);
             checkNewActivation(security);
         } catch (InvalidRequestException ignored) {

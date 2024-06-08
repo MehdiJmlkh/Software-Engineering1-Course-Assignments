@@ -3,6 +3,7 @@ package ir.ramtung.tinyme.domain;
 import ir.ramtung.tinyme.config.MockedJMSTestConfig;
 import ir.ramtung.tinyme.domain.entity.*;
 import ir.ramtung.tinyme.messaging.request.EnterOrderRq;
+import ir.ramtung.tinyme.messaging.request.DeleteOrderRq;
 import ir.ramtung.tinyme.domain.service.Matcher;
 import ir.ramtung.tinyme.messaging.request.MatchingState;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,9 +94,11 @@ class SecurityTest {
         );
     }
 
+
     @Test
     void delete_order_works() {
-        assertThatNoException().isThrownBy(() -> security.deleteOrder(orders.get(5)));
+        DeleteOrderRq deleteOrderRq = new DeleteOrderRq(1, security.getIsin(), Side.SELL, 6);
+        assertThatNoException().isThrownBy(() -> security.deleteOrder(deleteOrderRq));
         assertThat(security.getOrderBook().getBuyQueue()).isEqualTo(orders.subList(0, 5));
         assertThat(security.getOrderBook().getSellQueue()).isEqualTo(orders.subList(6, 10));
     }
