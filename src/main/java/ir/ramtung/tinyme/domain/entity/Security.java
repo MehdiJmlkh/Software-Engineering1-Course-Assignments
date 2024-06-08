@@ -68,7 +68,6 @@ public class Security {
         Order originalOrder = order.snapshot();
         order.updateFromRequest(updateOrderRq);
 
-
         orderBook.removeByOrderId(updateOrderRq.getSide(), updateOrderRq.getOrderId());
         MatchResult matchResult = matcher.execute(order);
         if (matchResult.outcome() != MatchingOutcome.OK) {
@@ -78,10 +77,13 @@ public class Security {
         return matchResult;
     }
 
-    private static void updatingFailed(EnterOrderRq updateOrderRq, Order originalOrder) {
-        if (updateOrderRq.getSide() == Side.BUY) {
-            originalOrder.getBroker().decreaseCreditBy(originalOrder.getValue());
-        }
+    private MatchingOutcome canStartUpdating(EnterOrderRq updateOrderRq, Order order) {
+        if ( updateOrderRq.getSide() == Side.SELL &&
+                !order.getShareholder().hasEnoughPositionsOn(this,
+                        orderBook.totalSellQuantityByShareholder(order.getShareholder()) - order.getQuantity() + updateOrderRq.getQuantity()))
+            return MatchingOutcome.NOT_ENOUGH_POSITIONS;
+
+        return MatchingOutcome.OK;
     }
 
     private void updatingStarted(EnterOrderRq updateOrderRq, Order order) {
@@ -90,13 +92,10 @@ public class Security {
         }
     }
 
-    private MatchingOutcome canStartUpdating(EnterOrderRq updateOrderRq, Order order) {
-        if ( updateOrderRq.getSide() == Side.SELL &&
-                !order.getShareholder().hasEnoughPositionsOn(this,
-                        orderBook.totalSellQuantityByShareholder(order.getShareholder()) - order.getQuantity() + updateOrderRq.getQuantity()))
-            return MatchingOutcome.NOT_ENOUGH_POSITIONS;
-
-        return MatchingOutcome.OK;
+    private static void updatingFailed(EnterOrderRq updateOrderRq, Order originalOrder) {
+        if (updateOrderRq.getSide() == Side.BUY) {
+            originalOrder.getBroker().decreaseCreditBy(originalOrder.getValue());
+        }
     }
 
     public List<Trade> changeMatchingState(ChangeMatchingStateRq changeMatchingStateRq, Matcher matcher) {
