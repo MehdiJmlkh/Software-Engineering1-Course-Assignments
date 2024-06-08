@@ -56,7 +56,36 @@ public class OrderHandlerTest {
     private Broker broker2;
     private Broker broker3;
     private List<Order> orders;
-
+    public void setUpOrderBook1(){
+        List<Order> orders = Arrays.asList(
+                new Order(1, security, Side.BUY, 304, 570, broker3, shareholder),
+                new Order(2, security, Side.BUY, 430, 550, broker3, shareholder),
+                new Order(3, security, Side.BUY, 445, 545, broker3, shareholder),
+                new Order(6, security, Side.SELL, 350, 580, broker1, shareholder),
+                new Order(7, security, Side.SELL, 100, 581, broker2, shareholder)
+        );
+        orders.forEach(order -> security.getOrderBook().enqueue(order));
+    }
+    public void setUpOrderBook2(Shareholder shareholder1){
+        List<Order> orders = Arrays.asList(
+                new Order(1, security, Side.BUY, 304, 570, broker3, shareholder1),
+                new Order(2, security, Side.BUY, 430, 550, broker3, shareholder1),
+                new Order(3, security, Side.BUY, 445, 545, broker3, shareholder1),
+                new Order(6, security, Side.SELL, 350, 580, broker1, shareholder),
+                new Order(7, security, Side.SELL, 100, 581, broker2, shareholder)
+        );
+        orders.forEach(order -> security.getOrderBook().enqueue(order));
+    }
+    public void setUpOrderBook3(int minimumExecutionQuantity){
+        List<Order> orders = Arrays.asList(
+                new Order(1, security, Side.BUY, 20, 570, broker3, shareholder, minimumExecutionQuantity),
+                new Order(2, security, Side.BUY, 430, 550, broker3, shareholder),
+                new Order(3, security, Side.BUY, 445, 545, broker3, shareholder),
+                new Order(6, security, Side.SELL, 350, 580, broker1, shareholder),
+                new Order(7, security, Side.SELL, 100, 581, broker2, shareholder)
+        );
+        orders.forEach(order -> security.getOrderBook().enqueue(order));
+    }
     @BeforeEach
     void setup() {
         securityRepository.clear();
@@ -244,14 +273,7 @@ public class OrderHandlerTest {
 
     @Test
     void new_sell_order_without_enough_positions_is_rejected() {
-        List<Order> orders = Arrays.asList(
-                new Order(1, security, Side.BUY, 304, 570, broker3, shareholder),
-                new Order(2, security, Side.BUY, 430, 550, broker3, shareholder),
-                new Order(3, security, Side.BUY, 445, 545, broker3, shareholder),
-                new Order(6, security, Side.SELL, 350, 580, broker1, shareholder),
-                new Order(7, security, Side.SELL, 100, 581, broker2, shareholder)
-        );
-        orders.forEach(order -> security.getOrderBook().enqueue(order));
+        setUpOrderBook1();
         shareholder.decPosition(security, 99_500);
         broker3.increaseCreditBy(100_000_000);
 
@@ -262,14 +284,7 @@ public class OrderHandlerTest {
 
     @Test
     void update_sell_order_without_enough_positions_is_rejected() {
-        List<Order> orders = Arrays.asList(
-                new Order(1, security, Side.BUY, 304, 570, broker3, shareholder),
-                new Order(2, security, Side.BUY, 430, 550, broker3, shareholder),
-                new Order(3, security, Side.BUY, 445, 545, broker3, shareholder),
-                new Order(6, security, Side.SELL, 350, 580, broker1, shareholder),
-                new Order(7, security, Side.SELL, 100, 581, broker2, shareholder)
-        );
-        orders.forEach(order -> security.getOrderBook().enqueue(order));
+        setUpOrderBook1();
         shareholder.decPosition(security, 99_500);
         broker3.increaseCreditBy(100_000_000);
 
@@ -283,14 +298,7 @@ public class OrderHandlerTest {
         Shareholder shareholder1 = Shareholder.builder().build();
         shareholder1.incPosition(security, 100_000);
         shareholderRepository.addShareholder(shareholder1);
-        List<Order> orders = Arrays.asList(
-                new Order(1, security, Side.BUY, 304, 570, broker3, shareholder1),
-                new Order(2, security, Side.BUY, 430, 550, broker3, shareholder1),
-                new Order(3, security, Side.BUY, 445, 545, broker3, shareholder1),
-                new Order(6, security, Side.SELL, 350, 580, broker1, shareholder),
-                new Order(7, security, Side.SELL, 100, 581, broker2, shareholder)
-        );
-        orders.forEach(order -> security.getOrderBook().enqueue(order));
+        setUpOrderBook2(shareholder1);
         shareholder.decPosition(security, 99_500);
         broker3.increaseCreditBy(100_000_000);
 
@@ -306,14 +314,7 @@ public class OrderHandlerTest {
         Shareholder shareholder1 = Shareholder.builder().build();
         shareholder1.incPosition(security, 100_000);
         shareholderRepository.addShareholder(shareholder1);
-        List<Order> orders = Arrays.asList(
-                new Order(1, security, Side.BUY, 304, 570, broker3, shareholder1),
-                new Order(2, security, Side.BUY, 430, 550, broker3, shareholder1),
-                new Order(3, security, Side.BUY, 445, 545, broker3, shareholder1),
-                new Order(6, security, Side.SELL, 350, 580, broker1, shareholder),
-                new Order(7, security, Side.SELL, 100, 581, broker2, shareholder)
-        );
-        orders.forEach(order -> security.getOrderBook().enqueue(order));
+        setUpOrderBook2(shareholder1);
         shareholder.decPosition(security, 99_500);
         broker3.increaseCreditBy(100_000_000);
 
@@ -329,14 +330,7 @@ public class OrderHandlerTest {
         Shareholder shareholder1 = Shareholder.builder().build();
         shareholder1.incPosition(security, 100_000);
         shareholderRepository.addShareholder(shareholder1);
-        List<Order> orders = Arrays.asList(
-                new Order(1, security, Side.BUY, 304, 570, broker3, shareholder1),
-                new Order(2, security, Side.BUY, 430, 550, broker3, shareholder1),
-                new Order(3, security, Side.BUY, 445, 545, broker3, shareholder1),
-                new Order(6, security, Side.SELL, 350, 580, broker1, shareholder),
-                new Order(7, security, Side.SELL, 100, 581, broker2, shareholder)
-        );
-        orders.forEach(order -> security.getOrderBook().enqueue(order));
+        setUpOrderBook2(shareholder1);
         shareholder.decPosition(security, 99_500);
         broker3.increaseCreditBy(100_000_000);
 
@@ -371,14 +365,7 @@ public class OrderHandlerTest {
 
     @Test
     void new_order_without_enough_execution_quantity_is_rejected() {
-        List<Order> orders = Arrays.asList(
-                new Order(1, security, Side.BUY, 20, 570, broker3, shareholder),
-                new Order(2, security, Side.BUY, 430, 550, broker3, shareholder),
-                new Order(3, security, Side.BUY, 445, 545, broker3, shareholder),
-                new Order(6, security, Side.SELL, 350, 580, broker1, shareholder),
-                new Order(7, security, Side.SELL, 100, 581, broker2, shareholder)
-        );
-        orders.forEach(order -> security.getOrderBook().enqueue(order));
+        setUpOrderBook3(0);
         shareholder.decPosition(security, 99_500);
         broker3.increaseCreditBy(100_000_000);
 
@@ -389,14 +376,7 @@ public class OrderHandlerTest {
 
     @Test
     void update_order_with_different_minimum_execution_quantity_is_rejected() {
-        List<Order> orders = Arrays.asList(
-                new Order(1, security, Side.BUY, 20, 570, broker3, shareholder, 10),
-                new Order(2, security, Side.BUY, 430, 550, broker3, shareholder),
-                new Order(3, security, Side.BUY, 445, 545, broker3, shareholder),
-                new Order(6, security, Side.SELL, 350, 580, broker1, shareholder),
-                new Order(7, security, Side.SELL, 100, 581, broker2, shareholder)
-        );
-        orders.forEach(order -> security.getOrderBook().enqueue(order));
+        setUpOrderBook3(10);
         shareholder.decPosition(security, 99_500);
         broker3.increaseCreditBy(100_000_000);
 
