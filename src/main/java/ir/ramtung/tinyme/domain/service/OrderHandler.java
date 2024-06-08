@@ -159,26 +159,4 @@ public class OrderHandler {
         }
     }
 
-    private Order createNewOrder(EnterOrderRq enterOrderRq) {
-        Security security = securityRepository.findSecurityByIsin(enterOrderRq.getSecurityIsin());
-        Broker broker = brokerRepository.findBrokerById(enterOrderRq.getBrokerId());
-        Shareholder shareholder = shareholderRepository.findShareholderById(enterOrderRq.getShareholderId());
-        Order order;
-
-        if (enterOrderRq.getPeakSize() == 0)
-            if (enterOrderRq.getStopPrice() == 0)
-                order = new Order(enterOrderRq.getOrderId(), security, enterOrderRq.getSide(),
-                        enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                        enterOrderRq.getEntryTime(), enterOrderRq.getMinimumExecutionQuantity());
-            else
-                order = new StopLimitOrder(enterOrderRq.getRequestId(), enterOrderRq.getOrderId(), security, enterOrderRq.getSide(),
-                        enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                        enterOrderRq.getEntryTime(), enterOrderRq.getStopPrice());
-        else
-            order = new IcebergOrder(enterOrderRq.getOrderId(), security, enterOrderRq.getSide(),
-                    enterOrderRq.getQuantity(), enterOrderRq.getPrice(), broker, shareholder,
-                    enterOrderRq.getEntryTime(), enterOrderRq.getPeakSize(), enterOrderRq.getMinimumExecutionQuantity());
-        return order;
-    }
-
 }
