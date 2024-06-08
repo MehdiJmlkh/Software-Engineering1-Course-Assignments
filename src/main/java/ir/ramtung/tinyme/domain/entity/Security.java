@@ -108,18 +108,22 @@ public class Security {
     }
 
     public int getOpeningPrice() {
-        HashSet<Integer> allPrice = orderBook.allPrices();
-        allPrice.add(marketPrice);
-        int openingPrice = allPrice.stream()
-                .map(price -> Arrays.asList(tradableQuantity(price),
-                                            Math.abs(marketPrice - price),
-                                            price))
+        HashSet<Integer> allPrices = orderBook.allPrices();
+        allPrices.add(marketPrice);
+        int openingPrice = allPrices.stream()
+                .map(price -> new HashMap<String, Integer>() {{
+                    put("tradableQuantity", tradableQuantity(price));
+                    put("priceDiff", Math.abs(marketPrice - price));
+                    put("price", price);
+                }})
                 .sorted(Comparator.comparing(
-                        (List<Integer> tuple) -> -tuple.get(0))
-                        .thenComparing(tuple -> tuple.get(1))
-                        .thenComparing(tuple -> tuple.get(2)))
-                .toList()
-                .get(0).get(2);
+                        (Map<String, Integer> priceInfo) -> -priceInfo.get("tradableQuantity"))
+                        .thenComparing(priceInfo -> priceInfo.get("priceDiff"))
+                        .thenComparing(priceInfo -> priceInfo.get("price")))
+                .map(priceInfo -> priceInfo.get("price"))
+                .findFirst()
+                .orElse(0);
+
         return tradableQuantity(openingPrice) == 0 ? 0 : openingPrice;
     }
 
