@@ -57,7 +57,7 @@ public class Security {
         MatchingOutcome outcome = canStartUpdating(updateOrderRq, order);
         if (outcome != MatchingOutcome.OK)
             return new MatchResult(outcome, null);
-        
+
         if (!order.losesPriority(updateOrderRq)) {
             order.updateFromRequest(updateOrderRq);
             return MatchResult.executed(null, List.of());
@@ -84,7 +84,7 @@ public class Security {
         }
     }
 
-    private static void updatingStarted(EnterOrderRq updateOrderRq, Order order) {
+    private void updatingStarted(EnterOrderRq updateOrderRq, Order order) {
         if (updateOrderRq.getSide() == Side.BUY) {
             order.getBroker().increaseCreditBy(order.getValue());
         }
