@@ -110,4 +110,10 @@ public class IcebergOrder extends Order {
         }
         decreaseQuantity(displayedQuantity);
     }
+
+    @Override
+    public boolean losesPriority(EnterOrderRq updateOrderRq) {
+        return super.losesPriority(updateOrderRq)
+                || peakSize < updateOrderRq.getPeakSize();
+    }
 }

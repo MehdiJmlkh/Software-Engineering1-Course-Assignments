@@ -148,4 +148,9 @@ public class Order {
             return false;
         return orderId == other.getOrderId() && getTotalQuantity() == other.getTotalQuantity();
     }
+
+    public boolean losesPriority(EnterOrderRq updateOrderRq) {
+        return isQuantityIncreased(updateOrderRq.getQuantity())
+                || updateOrderRq.getPrice() != price;
+    }
 }

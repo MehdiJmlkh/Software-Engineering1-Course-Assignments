@@ -57,11 +57,8 @@ public class Security {
         MatchingOutcome outcome = canStartUpdating(updateOrderRq, order);
         if (outcome != MatchingOutcome.OK)
             return new MatchResult(outcome, null);
-
-        boolean losesPriority = order.isQuantityIncreased(updateOrderRq.getQuantity())
-                || updateOrderRq.getPrice() != order.getPrice()
-                || ((order instanceof IcebergOrder icebergOrder) && (icebergOrder.getPeakSize() < updateOrderRq.getPeakSize()));
-        if (!losesPriority) {
+        
+        if (!order.losesPriority(updateOrderRq)) {
             order.updateFromRequest(updateOrderRq);
             return MatchResult.executed(null, List.of());
         }
