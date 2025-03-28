@@ -101,3 +101,15 @@ In auction matching, there is an additional action which is the **“opening act
 
 ### Publishing the results
 After the process matching is completed, all the results of the matching are published. The result of matching is a set of events that are published publicly or only for the related parties. The public events are Trade events which contain the price and quantity of the trade. There are two private events. One is the execution result of the order which can be accepted or rejected. The second private event is the execution report event which contains the list of trades created as the result of execution of the party order. 
+
+## Assignments
+The course included 8 assignments during the course. The first assignment (A1) aimed to familiarize us with the language and technologies used. In assignments A2 and A3, we became familiar with the base project while practicing unit testing and code review. In assignments A4 through A8, we added functionality to the base project, focusing on key development practices such as design, refactoring, and unit testing.
+
+### A1: ([Description](https://docs.google.com/document/d/1yhTugp9yNcw5gIkeaxFl18FU7h_tn4_cadU75L5Mr8o/edit?usp=sharing))
+### A2: ([Description](https://docs.google.com/document/d/1CpRhYFiA485hS8aEqPmVk6LOp_mPUdqvc1ZazIL_uj0/edit?usp=sharing))
+### A3: ([Description](https://docs.google.com/document/d/1zX9AFfvPs4Nx0TC7vbhhozumi1C9kb7bLInSSCqaD1s/edit?usp=sharing))
+### A4: ([Description](https://docs.google.com/document/d/17YVt4RVLyy_x7o-OzgyufAHiluDZF7KE_QZEEn9R85g/edit?usp=sharing))
+### A5: ([Description](https://docs.google.com/document/d/1E5Ke-oSiWiqc-N4dJvgAGJ1QF9OfIAIukwVdn2rnX9s/edit?usp=sharing))
+### A6: ([Description](https://docs.google.com/document/d/18p-UHEeoaF57GWJXLjZ5T7hICpDWjys4TUdGt3EvKds/edit?usp=sharing))
+### A7: ([Description](https://docs.google.com/document/d/1T4PdMMWkIdHMp9_DXf6GkdwmrOxRwVHkP8RIMBv6wvE/edit?usp=sharinghttps://docs.google.com/document/d/1T4PdMMWkIdHMp9_DXf6GkdwmrOxRwVHkP8RIMBv6wvE/edit?usp=sharing))
+### A8: ([Description](https://docs.google.com/document/d/1iXUwiBu82-FdjSMGyxlWhLDhDouRr0FSdvD76Y_IL6U/edit?usp=sharing))
