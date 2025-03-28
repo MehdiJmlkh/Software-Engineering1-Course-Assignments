@@ -105,16 +105,16 @@ After the process matching is completed, all the results of the matching are pub
 ## Assignments
 The course included 8 assignments during the course. The first assignment (A1) aimed to familiarize us with the language and technologies used. In assignments A2 and A3, we became familiar with the base project while practicing unit testing and code review. In assignments A4 through A8, we added functionality to the base project, focusing on key development practices such as design, refactoring, and unit testing.
 
-#### A1 ([Description](https://docs.google.com/document/d/1yhTugp9yNcw5gIkeaxFl18FU7h_tn4_cadU75L5Mr8o/edit?usp=sharing))
+### A1 ([Description](https://docs.google.com/document/d/1yhTugp9yNcw5gIkeaxFl18FU7h_tn4_cadU75L5Mr8o/edit?usp=sharing))
 Getting familiarize ith Spring Boot and the ActiveMQ (Artemis) message queue, which are used in the course project.
 
-#### A2 ([Description](https://docs.google.com/document/d/1CpRhYFiA485hS8aEqPmVk6LOp_mPUdqvc1ZazIL_uj0/edit?usp=sharing))
+### A2 ([Description](https://docs.google.com/document/d/1CpRhYFiA485hS8aEqPmVk6LOp_mPUdqvc1ZazIL_uj0/edit?usp=sharing))
 Reviewing the TinyME project code from a clean code perspective. As a secondary goal, Gain a better understanding of its structure during the review process, making our work on future projects easier.
 
-#### A3 ([Description](https://docs.google.com/document/d/1zX9AFfvPs4Nx0TC7vbhhozumi1C9kb7bLInSSCqaD1s/edit?usp=sharing))
+### A3 ([Description](https://docs.google.com/document/d/1zX9AFfvPs4Nx0TC7vbhhozumi1C9kb7bLInSSCqaD1s/edit?usp=sharing))
 Designing and implementing unit tests to ensure the correctness of the requirements related to broker validation. 
 
-#### A4 ([Description](https://docs.google.com/document/d/17YVt4RVLyy_x7o-OzgyufAHiluDZF7KE_QZEEn9R85g/edit?usp=sharing))
+### A4 ([Description](https://docs.google.com/document/d/17YVt4RVLyy_x7o-OzgyufAHiluDZF7KE_QZEEn9R85g/edit?usp=sharing))
 Adding a small new feature (Minimum Execution Quantity) to the project, during which we will go through the entire process of design, implementation, and testing.
 
 #### A5 ([Description](https://docs.google.com/document/d/1E5Ke-oSiWiqc-N4dJvgAGJ1QF9OfIAIukwVdn2rnX9s/edit?usp=sharing))
