@@ -128,3 +128,6 @@ Implementing auction-based matching or auction matching, in brief.
 
 ### A8 ([Description](https://docs.google.com/document/d/1iXUwiBu82-FdjSMGyxlWhLDhDouRr0FSdvD76Y_IL6U/edit?usp=sharing))
 Identifying bad smells and refactoring.
+
+---
+**Teaching Team** & [**javadkavian**](https://github.com/javadkavian) & [**MehdiJmlkh**](https://github.com/MehdiJmlkh)  
