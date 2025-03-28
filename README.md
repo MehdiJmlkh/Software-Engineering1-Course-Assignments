@@ -117,14 +117,14 @@ Designing and implementing unit tests to ensure the correctness of the requireme
 ### A4 ([Description](https://docs.google.com/document/d/17YVt4RVLyy_x7o-OzgyufAHiluDZF7KE_QZEEn9R85g/edit?usp=sharing))
 Adding a small new feature (Minimum Execution Quantity) to the project, during which we will go through the entire process of design, implementation, and testing.
 
-#### A5 ([Description](https://docs.google.com/document/d/1E5Ke-oSiWiqc-N4dJvgAGJ1QF9OfIAIukwVdn2rnX9s/edit?usp=sharing))
+### A5 ([Description](https://docs.google.com/document/d/1E5Ke-oSiWiqc-N4dJvgAGJ1QF9OfIAIukwVdn2rnX9s/edit?usp=sharing))
 Simulating a real-world scenario where, due to product constraints, we are required to quickly add a feature that impacts the architecture. However, the limited delivery timeframe restricts the ability to implement the desired level of quality. In this assignment, we must add a critical feature called "Stop-Limit Order" to the project.
 
-#### A6 ([Description](https://docs.google.com/document/d/18p-UHEeoaF57GWJXLjZ5T7hICpDWjys4TUdGt3EvKds/edit?usp=sharing))
+### A6 ([Description](https://docs.google.com/document/d/18p-UHEeoaF57GWJXLjZ5T7hICpDWjys4TUdGt3EvKds/edit?usp=sharing))
 Paying off the technical debt created in the previous assignment.
 
-#### A7 ([Description](https://docs.google.com/document/d/1T4PdMMWkIdHMp9_DXf6GkdwmrOxRwVHkP8RIMBv6wvE/edit?usp=sharing))
+### A7 ([Description](https://docs.google.com/document/d/1T4PdMMWkIdHMp9_DXf6GkdwmrOxRwVHkP8RIMBv6wvE/edit?usp=sharing))
 Implementing auction-based matching or auction matching, in brief.
 
-#### A8 ([Description](https://docs.google.com/document/d/1iXUwiBu82-FdjSMGyxlWhLDhDouRr0FSdvD76Y_IL6U/edit?usp=sharing))
+### A8 ([Description](https://docs.google.com/document/d/1iXUwiBu82-FdjSMGyxlWhLDhDouRr0FSdvD76Y_IL6U/edit?usp=sharing))
 Identifying bad smells and refactoring.
