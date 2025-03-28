@@ -1,4 +1,4 @@
-# Introduction to the Matching Engine Domain
+# Tiny Matching Engine
 
 ## Introduction
 Matching Engine is a core component of the stock exchange market which is responsible for receiving orders from market players including brokers and shareholders, matching them against each other, and creating trades. This document aims to explain the Matching Engine, its components, and how it works. The scope covered in this document is limited to this project (TinyME). The document is based on the [Chronicle Matching Engine Technical Report](https://chronicle.software/wp-content/uploads/2022/11/Matching_Engine_TR.pdf). Please note that in some parts of the domain, our specification may vary from the Chronicle’s.
